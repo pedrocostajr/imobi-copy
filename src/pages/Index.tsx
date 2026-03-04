@@ -4,7 +4,8 @@ import CopyForm from "@/components/CopyForm";
 import CopyResults from "@/components/CopyResults";
 import CreativeGenerator from "@/components/CreativeGenerator";
 import AIPhotoGenerator from "@/components/AIPhotoGenerator";
-import { CopyFormData, CopyResult, parseCopyResponse } from "@/lib/copy-types";
+import { CopyFormData, CopyResult } from "@/lib/copy-types";
+import { generateCopy } from "@/lib/ai-service";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,20 +20,13 @@ const Index = () => {
     setResult(null);
 
     try {
-      const { data: fnData, error } = await supabase.functions.invoke("generate-copy", {
-        body: data,
-      });
-
-      if (error) throw error;
-      if (fnData?.error) throw new Error(fnData.error);
-
-      const parsed = parseCopyResponse(fnData.content);
+      const parsed = await generateCopy(data);
       setResult(parsed);
     } catch (err: any) {
       console.error(err);
       toast({
         title: "Erro ao gerar copy",
-        description: err.message || "Tente novamente em alguns instantes.",
+        description: err.message || "Tente novamente em alguns instantes. Verifique sua chave API no arquivo .env",
         variant: "destructive",
       });
     } finally {
@@ -90,7 +84,7 @@ const Index = () => {
             <CopyForm onSubmit={handleGenerate} isLoading={isLoading} />
             {result && (
               <div className="mt-10 animate-fade-up">
-                <CopyResults result={result} onRegenerate={() => {}} />
+                <CopyResults result={result} onRegenerate={() => { }} />
               </div>
             )}
           </TabsContent>
