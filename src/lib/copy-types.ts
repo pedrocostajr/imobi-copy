@@ -27,69 +27,71 @@ export interface CopyResult {
 }
 
 export function parseCopyResponse(content: string): CopyResult {
-  const sections: Record<string, string> = {};
   const lines = content.split("\n");
+
+  // Dynamic blocks to find
+  const markers = [
+    { key: "copyPrincipal", labels: ["COPY PRINCIPAL"] },
+    { key: "headline", labels: ["HEADLINE PARA IMAGEM", "HEADLINE"] },
+    { key: "versaoResumida", labels: ["VERSÃO RESUMIDA", "VERSAO RESUMIDA"] },
+    { key: "mensagemWhatsapp", labels: ["MENSAGEM WHATSAPP", "MENSAGEM DO WHATSAPP"] },
+    { key: "ctaRecomendado", labels: ["CTA RECOMENDADO", "CTA"] },
+    { key: "roteiroReels", labels: ["ROTEIRO PARA REELS", "ROTEIRO REELS"] },
+    { key: "variacoesHeadline", labels: ["VARIAÇÕES DE HEADLINE", "VARIACOES DE HEADLINE"] },
+    { key: "variacoesCta", labels: ["VARIAÇÕES DE CTA", "VARIACOES DE CTA"] },
+  ];
+
+  const sections: Record<string, string[]> = {};
   let currentKey = "";
-  let currentContent: string[] = [];
 
   for (const line of lines) {
-    const cleanLine = line.replace(/^\s*\*\*/, "").replace(/\*\*\s*$/, "").trim();
-    // Regex more flexible to capture headers even with extra text (like "(30 SEGUNDOS)")
-    const headerMatch = cleanLine.match(/^(COPY PRINCIPAL|HEADLINE PARA IMAGEM|VERS[ÃA]O RESUMIDA|MENSAGEM WHATSAPP|CTA RECOMENDADO|ROTEIRO PARA REELS|VARIA[ÇC][ÕO]ES DE HEADLINE|VARIA[ÇC][ÕO]ES DE CTA).*/i);
+    const upperLine = line.trim().toUpperCase();
 
-    if (headerMatch) {
-      const detectedKey = headerMatch[1].toUpperCase();
-      // Check if it's actually one of our known headers by checking the start
-      const knownHeaders = ["COPY PRINCIPAL", "HEADLINE PARA IMAGEM", "VERSÃO RESUMIDA", "VERSAO RESUMIDA", "MENSAGEM WHATSAPP", "CTA RECOMENDADO", "ROTEIRO PARA REELS", "VARIAÇÕES DE HEADLINE", "VARIACOES DE HEADLINE", "VARIAÇÕES DE CTA", "VARIACOES DE CTA"];
-      const isKnown = knownHeaders.some(h => detectedKey.startsWith(h) || cleanLine.toUpperCase().startsWith(h));
+    // Find if this line contains any of our markers
+    const foundMarker = markers.find(m =>
+      m.labels.some(label => upperLine.includes(label))
+    );
 
-      if (isKnown) {
-        if (currentKey) {
-          sections[currentKey] = currentContent.join("\n").trim();
+    if (foundMarker) {
+      currentKey = foundMarker.key;
+      sections[currentKey] = [];
+
+      // Try to capture content on the same line after potential ":"
+      const parts = line.split(/:\s*/);
+      if (parts.length > 1) {
+        const afterColon = parts.slice(1).join(":").trim();
+        // Only take it if it's not actually another marker
+        if (afterColon && !markers.some(m => m.labels.some(l => afterColon.toUpperCase().includes(l)))) {
+          sections[currentKey].push(afterColon);
         }
-        // Normalize the key to our expected format
-        if (cleanLine.toUpperCase().includes("COPY PRINCIPAL")) currentKey = "COPY PRINCIPAL";
-        else if (cleanLine.toUpperCase().includes("HEADLINE PARA IMAGEM")) currentKey = "HEADLINE PARA IMAGEM";
-        else if (cleanLine.toUpperCase().includes("VERS") && cleanLine.toUpperCase().includes("O RESUMIDA")) currentKey = "VERSÃO RESUMIDA";
-        else if (cleanLine.toUpperCase().includes("MENSAGEM WHATSAPP")) currentKey = "MENSAGEM WHATSAPP";
-        else if (cleanLine.toUpperCase().includes("CTA RECOMENDADO")) currentKey = "CTA RECOMENDADO";
-        else if (cleanLine.toUpperCase().includes("ROTEIRO PARA REELS")) currentKey = "ROTEIRO PARA REELS";
-        else if (cleanLine.toUpperCase().includes("VARIA") && cleanLine.toUpperCase().includes("ES DE HEADLINE")) currentKey = "VARIAÇÕES DE HEADLINE";
-        else if (cleanLine.toUpperCase().includes("VARIA") && cleanLine.toUpperCase().includes("ES DE CTA")) currentKey = "VARIAÇÕES DE CTA";
-
-        const afterColon = cleanLine.split(":")[1];
-        currentContent = afterColon ? [afterColon.trim()] : [];
-        continue;
       }
-    }
-
-    if (currentKey) {
-      currentContent.push(line);
+    } else if (currentKey) {
+      sections[currentKey].push(line);
     }
   }
 
-  if (currentKey) {
-    sections[currentKey] = currentContent.join("\n").trim();
-  }
+  // Helper to get text from section
+  const getSectionText = (key: string): string => {
+    return (sections[key] || []).join("\n").trim();
+  };
 
-  const parseList = (text: string | undefined): string[] => {
-    if (!text) return [];
-    return text
-      .split("\n")
-      .map((l) => l.replace(/^[-*•\d+.]\s*/, "").trim())
-      .filter(Boolean)
-      .filter((l) => !l.toUpperCase().includes("VARIAÇÕES") && !l.toUpperCase().includes("VARIACOES"));
+  const parseList = (linesList: string[] | undefined): string[] => {
+    if (!linesList) return [];
+    return linesList
+      .map(l => l.trim())
+      .map(l => l.replace(/^[-*•\d+.]\s*/, "").trim())
+      .filter(l => l.length > 0 && !l.startsWith("###") && !l.startsWith("---"));
   };
 
   return {
-    copyPrincipal: sections["COPY PRINCIPAL"] || "",
-    headline: sections["HEADLINE PARA IMAGEM"] || "",
-    versaoResumida: sections["VERSÃO RESUMIDA"] || "",
-    mensagemWhatsapp: sections["MENSAGEM WHATSAPP"] || "",
-    ctaRecomendado: sections["CTA RECOMENDADO"] || "",
-    roteiroReels: sections["ROTEIRO PARA REELS"] || "",
-    variacoesHeadline: parseList(sections["VARIAÇÕES DE HEADLINE"]),
-    variacoesCta: parseList(sections["VARIAÇÕES DE CTA"]),
+    copyPrincipal: getSectionText("copyPrincipal"),
+    headline: getSectionText("headline"),
+    versaoResumida: getSectionText("versaoResumida"),
+    mensagemWhatsapp: getSectionText("mensagemWhatsapp"),
+    ctaRecomendado: getSectionText("ctaRecomendado"),
+    roteiroReels: getSectionText("roteiroReels"),
+    variacoesHeadline: parseList(sections["variacoesHeadline"]),
+    variacoesCta: parseList(sections["variacoesCta"]),
   };
 }
 

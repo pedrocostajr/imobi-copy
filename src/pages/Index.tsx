@@ -6,7 +6,6 @@ import CreativeGenerator from "@/components/CreativeGenerator";
 import AIPhotoGenerator from "@/components/AIPhotoGenerator";
 import { CopyFormData, CopyResult } from "@/lib/copy-types";
 import { generateCopy } from "@/lib/ai-service";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 

@@ -127,3 +127,41 @@ REGRAS DE OURO:
 
     return parseCopyResponse(content);
 }
+
+export async function generateImage(prompt: string): Promise<string> {
+    // Use VITE_GEMINI_API_KEY from environment or the hardcoded fallback
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyBqhqJhfS0C6EDVd2MzpY7eALDIoHRkwKI";
+
+    // Using imagen-3.0-generate-001 as it's a stable image model
+    const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(IMAGEN_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            instances: [{ prompt }],
+            parameters: {
+                sampleCount: 1,
+                aspectRatio: "1:1",
+                outputMimeType: "image/png",
+            },
+        }),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json();
+        console.error("Imagen API Error:", errorBody);
+        throw new Error(errorBody.error?.message || "Erro ao gerar imagem com Gemini Imagen");
+    }
+
+    const result = await response.json();
+    const base64Image = result.predictions?.[0]?.bytesBase64Encoded;
+
+    if (!base64Image) {
+        throw new Error("Nenhuma imagem gerada");
+    }
+
+    return `data:image/png;base64,${base64Image}`;
+}

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { generateImage } from "@/lib/ai-service";
 import { useToast } from "@/hooks/use-toast";
 
 const PRESETS = [
@@ -69,17 +69,9 @@ const AIPhotoGenerator = () => {
     setGeneratedImage(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke("generate-photo", {
-        body: { prompt },
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      if (data?.imageUrl) {
-        setGeneratedImage(data.imageUrl);
-        toast({ title: "Foto gerada com sucesso!" });
-      }
+      const imageUrl = await generateImage(prompt);
+      setGeneratedImage(imageUrl);
+      toast({ title: "Foto gerada com sucesso!" });
     } catch (err: any) {
       console.error(err);
       toast({
