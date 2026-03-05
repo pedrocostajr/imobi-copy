@@ -48,10 +48,11 @@ export function parseCopyResponse(content: string): CopyResult {
     const cleanLine = line.trim().replace(/^\**|#*|\**$/g, "").trim();
     const upperLine = cleanLine.toUpperCase();
 
-    // Find if this line contains any of our markers at the start
+    // Find if this line contains any of our markers
     const foundMarker = markers.find(m =>
-      m.labels.some(label => upperLine.startsWith(label))
+      m.labels.some(label => upperLine.includes(label))
     );
+
 
     if (foundMarker) {
       currentKey = foundMarker.key;
