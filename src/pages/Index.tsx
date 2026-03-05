@@ -14,7 +14,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const activeEngine = "Edge Engine (Lovable)";
+  const activeEngine = "Direct Edge Engine";
 
   const handleGenerate = async (data: CopyFormData) => {
     setIsLoading(true);

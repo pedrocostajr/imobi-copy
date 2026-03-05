@@ -1,36 +1,70 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
-import { supabase } from "@/integrations/supabase/client";
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
-    const { data: result, error } = await supabase.functions.invoke("generate-copy", {
-        body: data,
-    });
+    console.log("Iniciando geração de copy via Direct Fetch...");
 
-    if (error) {
-        console.error("Edge Function error:", error);
-        throw new Error(error.message || "Erro ao gerar copy via Edge Function");
+    try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-copy`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                "apikey": SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Erro na Edge Function (Copy):", response.status, errorText);
+            throw new Error(`Erro ${response.status}: Falha na comunicação com o servidor de IA.`);
+        }
+
+        const result = await response.json();
+
+        if (!result?.content) {
+            throw new Error("Resposta da IA veio vazia ou em formato inválido.");
+        }
+
+        return parseCopyResponse(result.content);
+    } catch (error: any) {
+        console.error("Erro de conexão (Copy):", error);
+        throw new Error(error.message || "Não foi possível conectar ao servidor de IA. Verifique sua conexão.");
     }
-
-    if (!result?.content) {
-        throw new Error("Resposta inválida da Edge Function");
-    }
-
-    return parseCopyResponse(result.content);
 }
 
 export async function generateImage(prompt: string): Promise<string> {
-    const { data, error } = await supabase.functions.invoke("generate-photo", {
-        body: { prompt },
-    });
+    console.log("Iniciando geração de imagem via Direct Fetch...");
 
-    if (error) {
-        console.error("Edge Function error:", error);
-        throw new Error(error.message || "Erro ao gerar foto via Edge Function");
+    try {
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-photo`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                "apikey": SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({ prompt }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Erro na Edge Function (Photo):", response.status, errorText);
+            throw new Error(`Erro ${response.status}: Falha ao gerar imagem.`);
+        }
+
+        const data = await response.json();
+
+        if (!data?.imageUrl) {
+            throw new Error("Não foi possível obter a URL da imagem gerada.");
+        }
+
+        return data.imageUrl;
+    } catch (error: any) {
+        console.error("Erro de conexão (Photo):", error);
+        throw new Error(error.message || "Erro ao conectar ao serviço de fotos.");
     }
-
-    if (!data?.imageUrl) {
-        throw new Error("Não foi possível obter a URL da imagem gerada.");
-    }
-
-    return data.imageUrl;
 }
