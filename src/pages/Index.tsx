@@ -12,13 +12,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const Index = () => {
   const [result, setResult] = useState<CopyResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastFormData, setLastFormData] = useState<CopyFormData | null>(null);
   const { toast } = useToast();
 
-  const activeEngine = "Gemini 1.5 (Stable)";
+  const activeEngine = "Gemini AI Engine (Ultra)";
 
   const handleGenerate = async (data: CopyFormData) => {
     setIsLoading(true);
     setResult(null);
+    setLastFormData(data);
 
     try {
       const parsed = await generateCopy(data);
@@ -27,11 +29,17 @@ const Index = () => {
       console.error(err);
       toast({
         title: "Erro ao gerar copy",
-        description: err.message || "Tente novamente em alguns instantes. Verifique sua chave API no arquivo .env",
+        description: err.message || "Tente novamente em alguns instantes.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRegenerate = () => {
+    if (lastFormData) {
+      handleGenerate(lastFormData);
     }
   };
 
@@ -92,7 +100,7 @@ const Index = () => {
             <CopyForm onSubmit={handleGenerate} isLoading={isLoading} />
             {result && (
               <div className="mt-10 animate-fade-up">
-                <CopyResults result={result} onRegenerate={() => { }} />
+                <CopyResults result={result} onRegenerate={handleRegenerate} />
               </div>
             )}
           </TabsContent>
