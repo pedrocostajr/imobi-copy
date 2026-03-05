@@ -1,13 +1,14 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
-import { CONFIG } from "./config";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+// Fallback key used only if VITE_GEMINI_API_KEY is not found in .env
+const FALLBACK_KEY = "AIzaSyACnzIjPulX05LVBSQrl5a6dR7nRmM6Mzk";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
-    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || CONFIG.GEMINI_API_KEY;
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || FALLBACK_KEY;
 
     if (!GEMINI_API_KEY || GEMINI_API_KEY === "COLOQUE_SUA_CHAVE_AQUI") {
-        throw new Error("Chave da API do Gemini não configurada no arquivo .env ou no config.ts");
+        throw new Error("Chave da API do Gemini não configurada.");
     }
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
