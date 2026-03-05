@@ -14,7 +14,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const activeEngine = "Direct Edge Engine";
+  const activeEngine = "Gemini 1.5 (Direct)";
 
   const handleGenerate = async (data: CopyFormData) => {
     setIsLoading(true);
