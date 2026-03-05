@@ -1,7 +1,7 @@
 // Refefined AI service for Gemini 2.5 Flash and Imagen 3.0
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
