@@ -2,7 +2,7 @@ import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
 // Note: Using direct Google API endpoints because Supabase Edge Functions 
 // encountered persistent network connectivity issues in the user's environment.
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
     console.log("🚀 Realizando chamada direta ao Gemini API...");
