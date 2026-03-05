@@ -1,12 +1,13 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
+import { CONFIG } from "./config";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
-    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || CONFIG.GEMINI_API_KEY;
 
     if (!GEMINI_API_KEY || GEMINI_API_KEY === "COLOQUE_SUA_CHAVE_AQUI") {
-        throw new Error("Chave da API do Gemini não configurada no arquivo .env");
+        throw new Error("Chave da API do Gemini não configurada no arquivo .env ou no config.ts");
     }
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
