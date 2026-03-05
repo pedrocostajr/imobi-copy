@@ -1,13 +1,11 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
-// Fallback key used only if VITE_GEMINI_API_KEY is not found in .env
-const FALLBACK_KEY = "AIzaSyBqhqJhfS0C6EDVd2MzpY7eALDIoHRkwKI";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
-    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || FALLBACK_KEY;
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === "COLOQUE_SUA_CHAVE_AQUI") {
+    if (!GEMINI_API_KEY) {
         throw new Error("Chave da API do Gemini não configurada.");
     }
 
@@ -129,8 +127,7 @@ REGRAS DE OURO:
 }
 
 export async function generateImage(prompt: string): Promise<string> {
-    // Use VITE_GEMINI_API_KEY from environment or the hardcoded fallback
-    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyBqhqJhfS0C6EDVd2MzpY7eALDIoHRkwKI";
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
     // Using imagen-3.0-generate-001 as it's a stable image model
     const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_API_KEY}`;
