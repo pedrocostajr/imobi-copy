@@ -1,28 +1,34 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
-// Universal candidates list covering all possible iterations of Gemini
-const MODEL_CANDIDATES = [
-    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent", name: "Gemini 1.5 Flash (v1beta)" },
-    { url: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent", name: "Gemini 1.5 Flash (v1)" },
-    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent", name: "Gemini 2.0 Flash (v1beta)" },
-    { url: "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent", name: "Gemini 2.0 Flash (v1)" },
-    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent", name: "Gemini 1.5 Flash Latest (v1beta)" },
-    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent", name: "Gemini 1.5 Pro (v1beta)" },
-    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", name: "Gemini Pro (v1beta)" },
-    { url: "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent", name: "Gemini Pro (v1)" }
-];
+async function listAvailableModels(apiKey: string): Promise<string[]> {
+    try {
+        console.log("🔍 Consultando lista de modelos permitidos para sua chave...");
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        if (!response.ok) return [];
+        const data = await response.json();
+        return data.models?.map((m: any) => m.name.replace("models/", "")) || [];
+    } catch (e) {
+        console.error("⚠️ Falha ao listar modelos:", e);
+        return [];
+    }
+}
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
-    console.log("🔍 Diagnóstico de Inicialização...");
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
-    // Diagnostic log (safe)
-    if (GEMINI_API_KEY) {
-        console.log(`✅ Chave detectada! Formato: ${GEMINI_API_KEY.substring(0, 4)}...${GEMINI_API_KEY.substring(GEMINI_API_KEY.length - 4)} (Total: ${GEMINI_API_KEY.length} chars)`);
-    } else {
-        console.error("❌ VITE_GEMINI_API_KEY está VAZIA. Verifique o painel da Vercel.");
-        throw new Error("Chave de API não configurada corretamente na Vercel.");
+    if (!GEMINI_API_KEY) {
+        throw new Error("Chave de API (VITE_GEMINI_API_KEY) não encontrada na Vercel.");
     }
+
+    // Attempt discovery first to be precise
+    const discoveredModels = await listAvailableModels(GEMINI_API_KEY);
+    console.log("📋 Modelos encontrados:", discoveredModels.length > 0 ? discoveredModels.join(", ") : "Nenhum (usando fallback)");
+
+    // Priority order for selection
+    const preference = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro", "gemini-pro", "gemini-1.0-pro"];
+    let bestModel = preference.find(p => discoveredModels.includes(p)) || (discoveredModels[0]) || "gemini-1.5-flash";
+
+    console.log(`🎯 Modelo selecionado para esta tentativa: ${bestModel}`);
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
     const systemPrompt = `Você é um Copywriter Sênior Imobiliário. 
@@ -36,12 +42,19 @@ VERSÃO RESUMIDA:
 MENSAGEM WHATSAPP:
 CTA RECOMENDADO:`;
 
+    const endpoints = [
+        `https://generativelanguage.googleapis.com/v1beta/models/${bestModel}:generateContent`,
+        `https://generativelanguage.googleapis.com/v1/models/${bestModel}:generateContent`,
+        // Fallback safety if the best model fails or isn't in discovery
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`
+    ];
+
     let lastError = "";
 
-    for (const model of MODEL_CANDIDATES) {
+    for (const url of endpoints) {
         try {
-            console.log(`📡 Varredura: Tentando ${model.name}...`);
-            const response = await fetch(`${model.url}?key=${GEMINI_API_KEY}`, {
+            console.log(`📡 Enviando para: ${url}...`);
+            const response = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -51,37 +64,28 @@ CTA RECOMENDADO:`;
             });
 
             if (response.ok) {
-                console.log(`✨ SUCESSO! O modelo vencedor foi: ${model.name}`);
                 const result = await response.json();
                 const content = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
                 return parseCopyResponse(content);
             }
 
             const errorBody = await response.json();
-            const msg = errorBody.error?.message || "Sem detalhes";
-            console.warn(`❌ ${model.name} falhou: ${response.status} - ${msg}`);
-            lastError = `[${model.name}] ${response.status}: ${msg}`;
-
-            // Critical quota error or auth error - usually applies to the whole key
-            if (response.status === 429) {
-                console.log("Trying to bypass quota with next model type...");
-            }
+            lastError = errorBody.error?.message || "Erro sem mensagem";
+            console.warn(`❌ Falha no endpoint ${url}: ${lastError}`);
         } catch (e: any) {
-            console.error(`🚨 Fatal no ${model.name}:`, e.message);
             lastError = e.message;
         }
     }
 
-    throw new Error(`Exaurimos todos os modelos disponíveis. Verifique se o Gemini está ativo na sua conta Google Cloud. Último erro: ${lastError}`);
+    throw new Error(`O Google recusou todos os modelos para sua chave. Erro final: ${lastError}`);
 }
 
 export async function generateImage(prompt: string): Promise<string> {
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-    // Imagen 3 always on v1beta
     const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_API_KEY}`;
 
     try {
-        console.log("🎨 Gerando imagem...");
+        console.log("🎨 Gerando foto...");
         const response = await fetch(IMAGEN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -93,13 +97,12 @@ export async function generateImage(prompt: string): Promise<string> {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(`Erro Imagem: ${error.error?.message || 'Falha'}`);
+            throw new Error(error.error?.message || 'Erro na foto');
         }
 
         const result = await response.json();
         return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
     } catch (error: any) {
-        console.error("🚨 Erro Foto:", error);
         throw error;
     }
 }
