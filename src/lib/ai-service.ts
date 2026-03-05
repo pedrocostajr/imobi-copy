@@ -1,15 +1,17 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
-// Models to try in order of preference/likelihood of availability
+// Expanded list of models to try. Some keys/regions only accept specific versions.
 const MODEL_CANDIDATES = [
     { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent", name: "Gemini 1.5 Flash (v1beta)" },
+    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent", name: "Gemini 1.5 Flash Latest (v1beta)" },
     { url: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent", name: "Gemini 1.5 Flash (v1)" },
     { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent", name: "Gemini 1.5 Pro (v1beta)" },
-    { url: "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent", name: "Gemini Pro (Legacy)" }
+    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", name: "Gemini Pro (v1beta)" },
+    { url: "https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent", name: "Gemini 1.0 Pro" }
 ];
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
-    console.log("🚀 Iniciando loop de resiliência para a copy...");
+    console.log("🚀 Iniciando loop de resiliência expandido...");
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
     if (!GEMINI_API_KEY) {
@@ -54,34 +56,39 @@ CTA RECOMENDADO:`;
             });
 
             if (response.ok) {
-                console.log(`✅ Sucesso com o modelo: ${model.name}!`);
+                console.log(`✅ Sucesso absoluto com o modelo: ${model.name}! ✨`);
                 const result = await response.json();
                 const content = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
                 return parseCopyResponse(content);
             }
 
             const errorBody = await response.json();
-            lastError = errorBody.error?.message || "Erro desconhecido";
-            console.warn(`⚠️ Falha no ${model.name}: ${response.status} - ${lastError}`);
+            const errorMsg = errorBody.error?.message || "Erro desconhecido";
+            const errorCode = errorBody.error?.code || response.status;
 
-            // If it's a 429 (quota), it's likely high load, we can try next model but 
-            // usually it means the key itself is throttled. Still, trying next model helps.
+            console.warn(`⚠️ Falha no ${model.name}: ${errorCode} - ${errorMsg}`);
+            lastError = `${model.name} (${errorCode}): ${errorMsg}`;
+
+            // If it's a critical auth error, stop early
+            if (errorCode === 400 && errorMsg.includes("API key not valid")) {
+                throw new Error("A chave de API configurada na Vercel parece ser inválida. Verifique os espaços ou caracteres extras.");
+            }
         } catch (e: any) {
             console.error(`🚨 Erro de conexão com ${model.name}:`, e.message);
             lastError = e.message;
         }
     }
 
-    throw new Error(`Não foi possível gerar a copy após tentar vários modelos. Último erro: ${lastError}`);
+    throw new Error(`Exaurimos todas as tentativas. Último erro: ${lastError}`);
 }
 
 export async function generateImage(prompt: string): Promise<string> {
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-    // Imagen 3 requires v1beta
+    // Using v1beta for Imagen 3 support
     const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_API_KEY}`;
 
     try {
-        console.log("🚀 Gerando imagem com Imagen 3.0...");
+        console.log("🚀 Gerando imagem com Imagen 3.0 Real-time...");
         const response = await fetch(IMAGEN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -94,7 +101,7 @@ export async function generateImage(prompt: string): Promise<string> {
         if (!response.ok) {
             const error = await response.json();
             console.error("❌ Erro Imagen API:", error);
-            throw new Error(`Erro na Imagem: ${error.error?.message || 'Falha na geração'}`);
+            throw new Error(`Erro na Imagem (${response.status}): ${error.error?.message || 'Falha na geração'}`);
         }
 
         const result = await response.json();
