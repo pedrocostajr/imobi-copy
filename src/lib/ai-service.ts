@@ -1,7 +1,7 @@
-// Refefined AI service for Gemini 1.5 Flash and Imagen 3.0
+// Refined AI service for Gemini 3.1 Flash and Gemini 3.1 Flash Image Preview (2026 Models)
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash:generateContent";
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
@@ -159,7 +159,7 @@ export async function generateImage(prompt: string): Promise<string> {
         throw new Error("Chave Gemini necessária para fotos.");
     }
 
-    const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_API_KEY}`;
+    const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image-preview:predict?key=${GEMINI_API_KEY}`;
 
     const response = await fetch(IMAGEN_URL, {
         method: "POST",
