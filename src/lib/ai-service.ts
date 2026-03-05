@@ -1,15 +1,19 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
-const IMAGEN_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict";
+// Models to try in order of preference/likelihood of availability
+const MODEL_CANDIDATES = [
+    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent", name: "Gemini 1.5 Flash (v1beta)" },
+    { url: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent", name: "Gemini 1.5 Flash (v1)" },
+    { url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent", name: "Gemini 1.5 Pro (v1beta)" },
+    { url: "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent", name: "Gemini Pro (Legacy)" }
+];
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
-    console.log("🚀 Iniciando geração de copy (v1beta stable)...");
+    console.log("🚀 Iniciando loop de resiliência para a copy...");
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
     if (!GEMINI_API_KEY) {
-        console.warn("⚠️ VITE_GEMINI_API_KEY está vazia nos envs.");
-        throw new Error("API Key não encontrada. Verifique se configurou VITE_GEMINI_API_KEY na Vercel.");
+        throw new Error("VITE_GEMINI_API_KEY não encontrada. Verifique suas configurações na Vercel.");
     }
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
@@ -35,42 +39,50 @@ VERSÃO RESUMIDA:
 MENSAGEM WHATSAPP:
 CTA RECOMENDADO:`;
 
-    try {
-        const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: systemPrompt }] }],
-                generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
-            }),
-        });
+    let lastError = "";
 
-        if (!response.ok) {
-            const error = await response.json();
-            console.error("❌ Erro Gemini v1beta:", error);
-            const msg = error.error?.message || "Erro desconhecido";
-            throw new Error(`Google Error ${response.status}: ${msg}. Tente trocar o modelo para gemini-pro se persistir.`);
+    for (const model of MODEL_CANDIDATES) {
+        try {
+            console.log(`📡 Tentando modelo: ${model.name}...`);
+            const response = await fetch(`${model.url}?key=${GEMINI_API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: systemPrompt }] }],
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 2048 }
+                }),
+            });
+
+            if (response.ok) {
+                console.log(`✅ Sucesso com o modelo: ${model.name}!`);
+                const result = await response.json();
+                const content = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                return parseCopyResponse(content);
+            }
+
+            const errorBody = await response.json();
+            lastError = errorBody.error?.message || "Erro desconhecido";
+            console.warn(`⚠️ Falha no ${model.name}: ${response.status} - ${lastError}`);
+
+            // If it's a 429 (quota), it's likely high load, we can try next model but 
+            // usually it means the key itself is throttled. Still, trying next model helps.
+        } catch (e: any) {
+            console.error(`🚨 Erro de conexão com ${model.name}:`, e.message);
+            lastError = e.message;
         }
-
-        const result = await response.json();
-        const content = result.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        return parseCopyResponse(content);
-    } catch (error: any) {
-        console.error("🚨 Erro crítico em generateCopy:", error);
-        throw error;
     }
+
+    throw new Error(`Não foi possível gerar a copy após tentar vários modelos. Último erro: ${lastError}`);
 }
 
 export async function generateImage(prompt: string): Promise<string> {
-    console.log("🚀 Iniciando geração de imagem (v1beta predict)...");
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-
-    if (!GEMINI_API_KEY) {
-        throw new Error("API Key necessária para gerar fotos.");
-    }
+    // Imagen 3 requires v1beta
+    const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_API_KEY}`;
 
     try {
-        const response = await fetch(`${IMAGEN_API_URL}?key=${GEMINI_API_KEY}`, {
+        console.log("🚀 Gerando imagem com Imagen 3.0...");
+        const response = await fetch(IMAGEN_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -81,18 +93,12 @@ export async function generateImage(prompt: string): Promise<string> {
 
         if (!response.ok) {
             const error = await response.json();
-            console.error("❌ Erro Imagen v1beta:", error);
-            throw new Error(`Imagem Error ${response.status}: ${error.error?.message || 'Falha na geração'}`);
+            console.error("❌ Erro Imagen API:", error);
+            throw new Error(`Erro na Imagem: ${error.error?.message || 'Falha na geração'}`);
         }
 
         const result = await response.json();
-        const base64 = result.predictions?.[0]?.bytesBase64Encoded;
-
-        if (!base64) {
-            throw new Error("A API não retornou a imagem. Tente uma descrição mais simples.");
-        }
-
-        return `data:image/png;base64,${base64}`;
+        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
     } catch (error: any) {
         console.error("🚨 Erro crítico em generateImage:", error);
         throw error;
