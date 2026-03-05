@@ -34,18 +34,40 @@ export function parseCopyResponse(content: string): CopyResult {
 
   for (const line of lines) {
     const cleanLine = line.replace(/^\s*\*\*/, "").replace(/\*\*\s*$/, "").trim();
-    const headerMatch = cleanLine.match(/^(COPY PRINCIPAL|HEADLINE PARA IMAGEM|VERS[ÃA]O RESUMIDA|MENSAGEM WHATSAPP|CTA RECOMENDADO|ROTEIRO PARA REELS|VARIA[ÇC][ÕO]ES DE HEADLINE|VARIA[ÇC][ÕO]ES DE CTA):\s*(.*)/i);
+    // Regex more flexible to capture headers even with extra text (like "(30 SEGUNDOS)")
+    const headerMatch = cleanLine.match(/^(COPY PRINCIPAL|HEADLINE PARA IMAGEM|VERS[ÃA]O RESUMIDA|MENSAGEM WHATSAPP|CTA RECOMENDADO|ROTEIRO PARA REELS|VARIA[ÇC][ÕO]ES DE HEADLINE|VARIA[ÇC][ÕO]ES DE CTA).*/i);
 
     if (headerMatch) {
-      if (currentKey) {
-        sections[currentKey] = currentContent.join("\n").trim();
+      const detectedKey = headerMatch[1].toUpperCase();
+      // Check if it's actually one of our known headers by checking the start
+      const knownHeaders = ["COPY PRINCIPAL", "HEADLINE PARA IMAGEM", "VERSÃO RESUMIDA", "VERSAO RESUMIDA", "MENSAGEM WHATSAPP", "CTA RECOMENDADO", "ROTEIRO PARA REELS", "VARIAÇÕES DE HEADLINE", "VARIACOES DE HEADLINE", "VARIAÇÕES DE CTA", "VARIACOES DE CTA"];
+      const isKnown = knownHeaders.some(h => detectedKey.startsWith(h) || cleanLine.toUpperCase().startsWith(h));
+
+      if (isKnown) {
+        if (currentKey) {
+          sections[currentKey] = currentContent.join("\n").trim();
+        }
+        // Normalize the key to our expected format
+        if (cleanLine.toUpperCase().includes("COPY PRINCIPAL")) currentKey = "COPY PRINCIPAL";
+        else if (cleanLine.toUpperCase().includes("HEADLINE PARA IMAGEM")) currentKey = "HEADLINE PARA IMAGEM";
+        else if (cleanLine.toUpperCase().includes("VERS") && cleanLine.toUpperCase().includes("O RESUMIDA")) currentKey = "VERSÃO RESUMIDA";
+        else if (cleanLine.toUpperCase().includes("MENSAGEM WHATSAPP")) currentKey = "MENSAGEM WHATSAPP";
+        else if (cleanLine.toUpperCase().includes("CTA RECOMENDADO")) currentKey = "CTA RECOMENDADO";
+        else if (cleanLine.toUpperCase().includes("ROTEIRO PARA REELS")) currentKey = "ROTEIRO PARA REELS";
+        else if (cleanLine.toUpperCase().includes("VARIA") && cleanLine.toUpperCase().includes("ES DE HEADLINE")) currentKey = "VARIAÇÕES DE HEADLINE";
+        else if (cleanLine.toUpperCase().includes("VARIA") && cleanLine.toUpperCase().includes("ES DE CTA")) currentKey = "VARIAÇÕES DE CTA";
+
+        const afterColon = cleanLine.split(":")[1];
+        currentContent = afterColon ? [afterColon.trim()] : [];
+        continue;
       }
-      currentKey = headerMatch[1].toUpperCase();
-      currentContent = headerMatch[2] ? [headerMatch[2]] : [];
-    } else if (currentKey) {
+    }
+
+    if (currentKey) {
       currentContent.push(line);
     }
   }
+
   if (currentKey) {
     sections[currentKey] = currentContent.join("\n").trim();
   }
@@ -56,7 +78,7 @@ export function parseCopyResponse(content: string): CopyResult {
       .split("\n")
       .map((l) => l.replace(/^[-*•\d+.]\s*/, "").trim())
       .filter(Boolean)
-      .filter((l) => !l.startsWith("Ângulo") && !l.includes("Focado em"));
+      .filter((l) => !l.toUpperCase().includes("VARIAÇÕES") && !l.toUpperCase().includes("VARIACOES"));
   };
 
   return {

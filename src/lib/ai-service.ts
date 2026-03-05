@@ -23,65 +23,75 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 
     const advancedBlock = data.modoAvancado
         ? `
-### INSTRUÇÕES ADICIONAIS (MODO AVANÇADO ATIVADO) ###
+### SEÇÕES ADICIONAIS (MODO AVANÇADO ATIVADO) ###
 
-1. VARIAÇÕES DE HEADLINE: 
-Gere 3 variações curtas e impactantes (máximo 10 palavras cada) que foquem em diferentes ângulos:
-- Ângulo 1: Focado em Benefício/Diferencial
-- Ângulo 2: Focado em Escassez/Oportunidade
-- Ângulo 3: Focado em Curiosidade
+VARIAÇÕES DE HEADLINE: 
+Gere exatamente 3 headlines alternativas extras (curtas e impactantes):
+1. [Headline foque em curiosidade]
+2. [Headline foque em urgência]
+3. [Headline foque em benefício prático]
 
-2. VARIAÇÕES DE CTA:
-Gere 2 CTAs alternativos que incentivem a ação imediata.
+VARIAÇÕES DE CTA:
+Gere exatamente 2 CTAs alternativos curtos e diretos:
+1. [CTA alternativo 1]
+2. [CTA alternativo 2]
 
-3. ROTEIRO PARA REELS (30 SEGUNDOS):
-Crie um roteiro cinematográfico e dinâmico dividido exatamente assim:
-- [00-03s] GANCHO: Uma frase de impacto visual ou falada que interrompa o scroll.
-- [03-10s] PROBLEMA/DESEJO: Toque na ferida ou no sonho do público ${data.publico}.
-- [10-20s] SOLUÇÃO: Como este imóvel em ${data.bairro} resolve isso.
-- [20-25s] AUTORIDADE/PROVA: Destaque o diferencial: ${data.diferencial}.
-- [25-30s] CHAMADA PARA AÇÃO: Comando claro para o objetivo "${data.objetivo}".
-Instrução: descreva a "Cena" (o que aparece) e o "Áudio" (o que é dito).`
+ROTEIRO PARA REELS (30 SEGUNDOS):
+Crie um roteiro dinâmico e visual. Divida em:
+- [00-05s] GANCHO: O que falar e o que mostrar para prender o scroll.
+- [05-15s] REVELAÇÃO: Detalhes do imóvel (${data.tipo}) e localização (${data.bairro}).
+- [15-25s] DIFERENCIAL: Por que este imóvel é único (${data.diferencial}).
+- [25-30s] CHAMADA FINAL: O que o espectador deve fazer agora.`
         : "";
 
-    const systemPrompt = `Você é um Copywriter Sênior de Alta Performance, especializado no mercado imobiliário brasileiro e em neuro-vendas para Meta Ads (Facebook/Instagram). Sua missão é gerar uma copy de conversão nível "Agência Premium".
+    const systemPrompt = `Você é um Copywriter Sênior de Alta Performance, focado em conversão extrema para o mercado imobiliário.
 
-DADOS DO PROJETO:
-- Produto: ${data.tipo} em ${data.cidade}/${data.bairro}
+DADOS DO IMÓVEL:
+- Tipo: ${data.tipo} em ${data.cidade}/${data.bairro}
 - Estágio: ${data.estagio}
-- Valor: ${valorFinal}
-- Condições: ${data.temEntrada ? `Entrada de ${data.entrada}` : "Sob consulta"} | ${data.parcelas ? `Parcelamento: ${data.parcelas}` : ""}
+- Valor e Condições: ${valorFinal} | ${data.temEntrada ? `Entrada de ${data.entrada}` : ""} | ${data.parcelas ? `Parcelas: ${data.parcelas}` : ""}
 - Público: ${data.publico}
 - Diferencial: ${data.diferencial}
 - Objetivo: ${data.objetivo}
 - Tom: ${data.tom}
 
-SUA ESTRUTURA DE RESPOSTA (OBRIGATÓRIA):
+### INSTRUÇÕES OBRIGATÓRIAS ###
+1. COPY PRINCIPAL: Escreva uma copy persuasiva (AIDA). 
+   - ATENÇÃO: É PROIBIDO incluir os rótulos "Atenção:", "Interesse:", "Desejo:" ou "Ação:" no texto. O texto deve ser fluido e pronto para copiar e colar.
+   - Use parágrafos curtos, emojis estratégicos e um CTA forte ao final ligado ao objetivo "${data.objetivo}".
+
+2. HEADLINE PARA IMAGEM: Uma frase curta (máximo 8 palavras) para o criativo.
+
+3. VERSÃO RESUMIDA: Um texto curto (até 280 caracteres) para legendas rápidas ou Stories.
+
+4. MENSAGEM WHATSAPP: O texto que o cliente enviará ao iniciar o contato.
+
+5. CTA RECOMENDADO: O texto curto para o botão do anúncio.
+
+FORMATO DE RESPOSTA (MANTENHA OS TÍTULOS ABAIXO EXATAMENTE ASSIM):
 
 COPY PRINCIPAL:
-[Crie um texto persuasivo usando a estrutura AIDA. Use emojis de forma profissional. Comece com uma 'Quebra de Padrão' poderosa que não pareça anúncio comum. No meio, incorpore os dados de valor e condições de forma que pareçam uma oportunidade única. Termine com um CTA irresistível ligado ao objetivo ${data.objetivo}.]
+[Texto aqui]
 
 HEADLINE PARA IMAGEM:
-[Uma frase curta, de no máximo 8 palavras, que complemente a imagem e gere clique imediato.]
+[Texto aqui]
 
 VERSÃO RESUMIDA:
-[Um parágrafo de até 300 caracteres focado apenas no benefício central e CTA.]
+[Texto aqui]
 
 MENSAGEM WHATSAPP:
-[Um texto de primeira abordagem para o lead enviar, já demonstrando interesse específico no imóvel de ${data.bairro}.]
+[Texto aqui]
 
 CTA RECOMENDADO:
-[O texto exato que deve ir no botão do anúncio (ex: Cadastre-se, Saiba Mais, Enviar Mensagem).]
+[Texto aqui]
 
 ${advancedBlock}
 
 REGRAS DE OURO:
-- Proibido usar "Venha conhecer o seu novo lar" ou clichês vazios.
-- Foque em transformar as características em benefícios reais.
-- Se o público for "Investidor", fale de TIR, ROI e liquidez.
-- Se for "Família", fale de segurança, espaço e memórias.
-- Use parágrafos curtos e bullet points para facilitar a leitura no celular.
-- A resposta deve seguir RIGOROSAMENTE as etiquetas em maiúsculas acima para o processamento de texto.`;
+- Sem clichês imobiliários como "seu sonho começa aqui".
+- Se for Minha Casa Minha Vida, foque em facilidade e parcelas.
+- Se for Alto Padrão ou Investidor, foque em localização, exclusividade e ROI.
+- A resposta deve ser limpa, sem comentários extras além das seções solicitadas.`;
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
         method: "POST",
