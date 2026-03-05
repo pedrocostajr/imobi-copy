@@ -90,16 +90,22 @@ ${data.modoAvancado ? 'VARIAÇÕES DE HEADLINE:\nVARIAÇÕES DE CTA:\nROTEIRO PA
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: systemPrompt }] }],
-                    generationConfig: { temperature: 0.7 }
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 2500,
+                        topP: 0.95
+                    }
                 }),
             });
 
             if (response.ok) {
                 const resData = await response.json();
                 const content = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                console.log("📄 Conteúdo bruto recebido:", content);
                 console.log(`🎉 Sucesso com ${selectedModel}!`);
                 return parseCopyResponse(content);
             }
+
 
             const errorBody = await response.json().catch(() => ({}));
             lastError = errorBody.error?.message || "Erro desconhecido";

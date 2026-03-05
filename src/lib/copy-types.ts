@@ -45,11 +45,12 @@ export function parseCopyResponse(content: string): CopyResult {
   let currentKey = "";
 
   for (const line of lines) {
-    const upperLine = line.trim().toUpperCase();
+    const cleanLine = line.trim().replace(/^\**|#*|\**$/g, "").trim();
+    const upperLine = cleanLine.toUpperCase();
 
-    // Find if this line contains any of our markers
+    // Find if this line contains any of our markers at the start
     const foundMarker = markers.find(m =>
-      m.labels.some(label => upperLine.includes(label))
+      m.labels.some(label => upperLine.startsWith(label))
     );
 
     if (foundMarker) {
@@ -57,9 +58,9 @@ export function parseCopyResponse(content: string): CopyResult {
       sections[currentKey] = [];
 
       // Try to capture content on the same line after potential ":"
-      const parts = line.split(/:\s*/);
-      if (parts.length > 1) {
-        const afterColon = parts.slice(1).join(":").trim();
+      const colonIndex = line.indexOf(":");
+      if (colonIndex !== -1) {
+        const afterColon = line.substring(colonIndex + 1).trim();
         // Only take it if it's not actually another marker
         if (afterColon && !markers.some(m => m.labels.some(l => afterColon.toUpperCase().includes(l)))) {
           sections[currentKey].push(afterColon);
@@ -69,6 +70,7 @@ export function parseCopyResponse(content: string): CopyResult {
       sections[currentKey].push(line);
     }
   }
+
 
   // Helper to get text from section
   const getSectionText = (key: string): string => {
