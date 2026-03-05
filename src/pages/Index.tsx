@@ -38,9 +38,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Maintenance Notice */}
-      <div className="bg-gradient-to-r from-amber-500/20 via-amber-600/20 to-amber-500/20 border-b border-amber-500/30 py-2 px-4 text-center">
-        <p className="text-sm font-medium text-amber-200 animate-pulse">
-          🚀 O sistema está passando por uma atualização importante. Algumas funções podem oscilar temporariamente.
+      <div className="bg-amber-950 py-2.5 px-4 text-center border-b border-amber-500/20">
+        <p className="text-sm font-semibold text-amber-200 animate-pulse flex items-center justify-center gap-2">
+          <span>🚀</span> O sistema está passando por uma atualização importante. Algumas funções podem oscilar temporariamente.
         </p>
       </div>
 
