@@ -2,7 +2,7 @@ import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 // Fallback key used only if VITE_GEMINI_API_KEY is not found in .env
-const FALLBACK_KEY = "AIzaSyBzOqes7mcsCpsR6N41-WYhScA1xI5otjo";
+const FALLBACK_KEY = "AIzaSyBqhqJhfS0C6EDVd2MzpY7eALDIoHRkwKI";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || FALLBACK_KEY;
