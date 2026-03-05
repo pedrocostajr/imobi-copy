@@ -52,14 +52,28 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
     console.log(`🎯 Modelo Escolhido: ${selectedModel}`);
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
+    const advancedBlock = data.modoAvancado
+        ? `
+### SEÇÕES ADICIONAIS (MODO AVANÇADO ATIVADO) ###
+VARIAÇÕES DE HEADLINE: 3 alternativas impactantes.
+VARIAÇÕES DE CTA: 2 alternativas diretas.
+ROTEIRO PARA REELS: Um roteiro de 30 segundos com Gancho, Corpo e CTA.`
+        : "";
+
     const systemPrompt = `Você é um Copywriter Imobiliário Sênior. Tom: ${data.tom}. Objetivo: ${data.objetivo}.
-DADOS: ${data.tipo} em ${data.cidade}/${data.bairro}. Valor: ${valorFinal}.
-Responda APENAS com os blocos:
+DADOS: ${data.tipo} em ${data.cidade}/${data.bairro}. Valor: ${valorFinal}. Público: ${data.publico}.
+OBJETIVO: ${data.objetivo}.
+
+${advancedBlock}
+
+REGRAS: Use a técnica AIDA. Responda APENAS com os blocos (incluindo os avançados se listados acima):
 COPY PRINCIPAL:
 HEADLINE PARA IMAGEM:
 VERSÃO RESUMIDA:
 MENSAGEM WHATSAPP:
-CTA RECOMENDADO:`;
+CTA RECOMENDADO:
+${data.modoAvancado ? 'VARIAÇÕES DE HEADLINE:\nVARIAÇÕES DE CTA:\nROTEIRO PARA REELS:' : ''}`;
+
 
     const endpoints = [
         `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`,
