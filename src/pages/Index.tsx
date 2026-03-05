@@ -14,7 +14,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const activeEngine = import.meta.env.VITE_OPENAI_API_KEY ? "GPT-4o (OpenAI)" : "Gemini 1.5 (Google)";
+  const activeEngine = "Edge Engine (Lovable)";
 
   const handleGenerate = async (data: CopyFormData) => {
     setIsLoading(true);
