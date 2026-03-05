@@ -53,43 +53,22 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
 
-    const systemPrompt = `Você é um Copywriter Especialista em Marketing Imobiliário. 
-DADOS DO IMÓVEL: ${data.tipo} em ${data.cidade}/${data.bairro}. 
-PÚBLICO-ALVO: ${data.publico}. 
-VALOR: ${valorFinal}. 
-TOM DA COMUNICAÇÃO: ${data.tom}. 
-OBJETIVO: ${data.objetivo}.
-DIFERENCIAIS: ${data.diferencial || 'Não informados'}.
+    const systemPrompt = `Você é um Copywriter Especialista em Marketing Imobiliário. Tom: ${data.tom}. 
+DADOS: ${data.tipo} em ${data.cidade}/${data.bairro}. Público: ${data.publico}. Valor: ${valorFinal}. Objetivo: ${data.objetivo}.
 
-Crie uma copy envolvente e persuasiva focada em conversão, utilizando a técnica AIDA de forma implícita (sem citar os nomes das etapas).
+Crie uma copy envolvente para anúncio. NÃO cite os nomes das etapas AIDA (Atenção, Interesse, etc).
 
-ESTRUTURA OBRIGATÓRIA DA RESPOSTA (Responda APENAS com estes títulos):
+OBRIGATÓRIO: Forneça a resposta estruturada EXATAMENTE nestes ${data.modoAvancado ? '8' : '5'} blocos numerados abaixo, sem pular nenhum:
 
-COPY PRINCIPAL:
-(Uma copy completa e persuasiva)
+1. COPY PRINCIPAL:
+2. HEADLINE PARA IMAGEM:
+3. VERSÃO RESUMIDA:
+4. MENSAGEM WHATSAPP:
+5. CTA RECOMENDADO:
+${data.modoAvancado ? `6. VARIAÇÕES DE HEADLINE:
+7. VARIAÇÕES DE CTA:
+8. ROTEIRO PARA REELS:` : ''}`;
 
-HEADLINE PARA IMAGEM:
-(Uma frase curta e impactante)
-
-VERSÃO RESUMIDA:
-(Para legendas rápidas)
-
-MENSAGEM WHATSAPP:
-(Abordagem direta e cordial)
-
-CTA RECOMENDADO:
-(Chamada para ação clara)
-
-${data.modoAvancado ? `
-VARIAÇÕES DE HEADLINE:
-(3 opções extras)
-
-VARIAÇÕES DE CTA:
-(2 opções extras)
-
-ROTEIRO PARA REELS:
-(Roteiro de 30s com indicações de cena e fala)
-` : ''}`;
 
 
 

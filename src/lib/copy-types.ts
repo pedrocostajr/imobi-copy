@@ -31,14 +31,15 @@ export function parseCopyResponse(content: string): CopyResult {
 
   // Dynamic blocks to find
   const markers = [
-    { key: "copyPrincipal", labels: ["COPY PRINCIPAL", "TEXTO PRINCIPAL"] },
-    { key: "headline", labels: ["HEADLINE PARA IMAGEM", "HEADLINE", "TÍTULO"] },
-    { key: "versaoResumida", labels: ["VERSÃO RESUMIDA", "VERSAO RESUMIDA", "RESUMO"] },
-    { key: "mensagemWhatsapp", labels: ["MENSAGEM WHATSAPP", "MENSAGEM DO WHATSAPP", "WHATSAPP"] },
-    { key: "ctaRecomendado", labels: ["CTA RECOMENDADO", "CTA", "CHAMADA PARA AÇÃO"] },
-    { key: "roteiroReels", labels: ["ROTEIRO PARA REELS", "ROTEIRO REELS", "REELS"] },
-    { key: "variacoesHeadline", labels: ["VARIAÇÕES DE HEADLINE", "VARIACOES DE HEADLINE", "OUTRAS HEADLINES"] },
-    { key: "variacoesCta", labels: ["VARIAÇÕES DE CTA", "VARIACOES DE CTA", "OUTROS CTAS"] },
+    { key: "copyPrincipal", labels: ["1. COPY PRINCIPAL", "COPY PRINCIPAL", "TEXTO PRINCIPAL"] },
+    { key: "headline", labels: ["2. HEADLINE PARA IMAGEM", "HEADLINE PARA IMAGEM", "HEADLINE", "TÍTULO"] },
+    { key: "versaoResumida", labels: ["3. VERSÃO RESUMIDA", "VERSAO RESUMIDA", "RESUMO"] },
+    { key: "mensagemWhatsapp", labels: ["4. MENSAGEM WHATSAPP", "MENSAGEM DO WHATSAPP", "WHATSAPP"] },
+    { key: "ctaRecomendado", labels: ["5. CTA RECOMENDADO", "CTA", "CHAMADA PARA AÇÃO"] },
+    { key: "roteiroReels", labels: ["6. ROTEIRO PARA REELS", "ROTEIRO REELS", "REELS", "8. ROTEIRO PARA REELS"] },
+    { key: "variacoesHeadline", labels: ["7. VARIAÇÕES DE HEADLINE", "VARIACOES DE HEADLINE", "OUTRAS HEADLINES", "6. VARIAÇÕES DE HEADLINE"] },
+    { key: "variacoesCta", labels: ["8. VARIAÇÕES DE CTA", "VARIACOES DE CTA", "OUTROS CTAS", "7. VARIAÇÕES DE CTA"] },
+
 
   ];
 
