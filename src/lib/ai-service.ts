@@ -23,72 +23,65 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 
     const advancedBlock = data.modoAvancado
         ? `
+### INSTRUÇÕES ADICIONAIS (MODO AVANÇADO ATIVADO) ###
 
-Além disso, como o modo avançado está ativado, gere também:
+1. VARIAÇÕES DE HEADLINE: 
+Gere 3 variações curtas e impactantes (máximo 10 palavras cada) que foquem em diferentes ângulos:
+- Ângulo 1: Focado em Benefício/Diferencial
+- Ângulo 2: Focado em Escassez/Oportunidade
+- Ângulo 3: Focado em Curiosidade
 
-VARIAÇÕES DE HEADLINE:
-1. (headline alternativa 1)
-2. (headline alternativa 2)
-3. (headline alternativa 3)
+2. VARIAÇÕES DE CTA:
+Gere 2 CTAs alternativos que incentivem a ação imediata.
 
-VARIAÇÕES DE CTA:
-1. (CTA alternativo 1)
-2. (CTA alternativo 2)
-
-ROTEIRO PARA REELS:
-Crie um roteiro de 30 segundos para Reels/TikTok seguindo esta estrutura:
-- QUEBRA DE PADRÃO (0-3s): Frase curta e impactante que prende atenção
-- CONEXÃO COM DOR/DESEJO (3-8s): Faça o espectador se identificar
-- APRESENTAÇÃO DA SOLUÇÃO (8-18s): Mostre o imóvel como a resposta
-- PROVA/CONCRETEZA (18-23s): Dados reais, localização, diferenciais
-- CTA FORTE (23-30s): Chamada direta para cadastro ou WhatsApp
-Formato: escreva cada cena com indicação de tempo e texto de narração.`
+3. ROTEIRO PARA REELS (30 SEGUNDOS):
+Crie um roteiro cinematográfico e dinâmico dividido exatamente assim:
+- [00-03s] GANCHO: Uma frase de impacto visual ou falada que interrompa o scroll.
+- [03-10s] PROBLEMA/DESEJO: Toque na ferida ou no sonho do público ${data.publico}.
+- [10-20s] SOLUÇÃO: Como este imóvel em ${data.bairro} resolve isso.
+- [20-25s] AUTORIDADE/PROVA: Destaque o diferencial: ${data.diferencial}.
+- [25-30s] CHAMADA PARA AÇÃO: Comando claro para o objetivo "${data.objetivo}".
+Instrução: descreva a "Cena" (o que aparece) e o "Áudio" (o que é dito).`
         : "";
 
-    const systemPrompt = `Você é um copywriter especialista em mercado imobiliário brasileiro, treinado em técnicas de quebra de padrão, AIDA e gatilhos mentais para gerar cadastros e conversões reais.
+    const systemPrompt = `Você é um Copywriter Sênior de Alta Performance, especializado no mercado imobiliário brasileiro e em neuro-vendas para Meta Ads (Facebook/Instagram). Sua missão é gerar uma copy de conversão nível "Agência Premium".
 
-Crie uma copy altamente persuasiva para Meta Ads com base nos seguintes dados:
+DADOS DO PROJETO:
+- Produto: ${data.tipo} em ${data.cidade}/${data.bairro}
+- Estágio: ${data.estagio}
+- Valor: ${valorFinal}
+- Condições: ${data.temEntrada ? `Entrada de ${data.entrada}` : "Sob consulta"} | ${data.parcelas ? `Parcelamento: ${data.parcelas}` : ""}
+- Público: ${data.publico}
+- Diferencial: ${data.diferencial}
+- Objetivo: ${data.objetivo}
+- Tom: ${data.tom}
 
-Tipo de imóvel: ${data.tipo}
-Cidade: ${data.cidade}
-Bairro: ${data.bairro}
-${condicoesBlock}
-Público-alvo: ${data.publico}
-Diferencial principal: ${data.diferencial}
-Estágio do imóvel: ${data.estagio}
-Objetivo da campanha: ${data.objetivo}
-Tom da comunicação: ${data.tom}
-
-Regras obrigatórias:
-- Use estrutura AIDA adaptada para imóveis.
-- Comece SEMPRE com uma frase de quebra de padrão nos primeiros 3 segundos de leitura (pergunta provocativa, afirmação contraintuitiva ou situação que dói no bolso).
-- Linguagem natural e profissional.
-- Não usar promessas irreais.
-- Evitar clichês exagerados.
-- Incluir CTA claro e estratégico orientando o próximo passo (nunca usar "saiba mais" sozinho).
-- Texto principal com no máximo 1200 caracteres.
-- Adaptar linguagem ao público selecionado.
-- Se houver informações de entrada e parcelamento, incluí-las na copy de forma persuasiva.
-- Se for alto padrão, enfatizar exclusividade e diferenciação.
-- Se for investimento, enfatizar valorização e oportunidade.
-- Se for Minha Casa Minha Vida, enfatizar facilidade e segurança.
-
-Organize a resposta EXATAMENTE neste formato (mantenha os títulos em maiúscula seguidos de dois pontos):
+SUA ESTRUTURA DE RESPOSTA (OBRIGATÓRIA):
 
 COPY PRINCIPAL:
-(texto da copy principal)
+[Crie um texto persuasivo usando a estrutura AIDA. Use emojis de forma profissional. Comece com uma 'Quebra de Padrão' poderosa que não pareça anúncio comum. No meio, incorpore os dados de valor e condições de forma que pareçam uma oportunidade única. Termine com um CTA irresistível ligado ao objetivo ${data.objetivo}.]
 
 HEADLINE PARA IMAGEM:
-(máximo 8 palavras)
+[Uma frase curta, de no máximo 8 palavras, que complemente a imagem e gere clique imediato.]
 
 VERSÃO RESUMIDA:
-(até 300 caracteres)
+[Um parágrafo de até 300 caracteres focado apenas no benefício central e CTA.]
 
 MENSAGEM WHATSAPP:
-(texto de abordagem após o clique)
+[Um texto de primeira abordagem para o lead enviar, já demonstrando interesse específico no imóvel de ${data.bairro}.]
 
 CTA RECOMENDADO:
-(curto e direto)${advancedBlock}`;
+[O texto exato que deve ir no botão do anúncio (ex: Cadastre-se, Saiba Mais, Enviar Mensagem).]
+
+${advancedBlock}
+
+REGRAS DE OURO:
+- Proibido usar "Venha conhecer o seu novo lar" ou clichês vazios.
+- Foque em transformar as características em benefícios reais.
+- Se o público for "Investidor", fale de TIR, ROI e liquidez.
+- Se for "Família", fale de segurança, espaço e memórias.
+- Use parágrafos curtos e bullet points para facilitar a leitura no celular.
+- A resposta deve seguir RIGOROSAMENTE as etiquetas em maiúsculas acima para o processamento de texto.`;
 
     const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
         method: "POST",

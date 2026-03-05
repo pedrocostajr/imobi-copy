@@ -33,8 +33,9 @@ export function parseCopyResponse(content: string): CopyResult {
   let currentContent: string[] = [];
 
   for (const line of lines) {
-    const cleanLine = line.replace(/\*\*/g, "").trim();
+    const cleanLine = line.replace(/^\s*\*\*/, "").replace(/\*\*\s*$/, "").trim();
     const headerMatch = cleanLine.match(/^(COPY PRINCIPAL|HEADLINE PARA IMAGEM|VERS[ÃA]O RESUMIDA|MENSAGEM WHATSAPP|CTA RECOMENDADO|ROTEIRO PARA REELS|VARIA[ÇC][ÕO]ES DE HEADLINE|VARIA[ÇC][ÕO]ES DE CTA):\s*(.*)/i);
+
     if (headerMatch) {
       if (currentKey) {
         sections[currentKey] = currentContent.join("\n").trim();
@@ -53,8 +54,9 @@ export function parseCopyResponse(content: string): CopyResult {
     if (!text) return [];
     return text
       .split("\n")
-      .map((l) => l.replace(/^\d+\.\s*/, "").trim())
-      .filter(Boolean);
+      .map((l) => l.replace(/^[-*•\d+.]\s*/, "").trim())
+      .filter(Boolean)
+      .filter((l) => !l.startsWith("Ângulo") && !l.includes("Focado em"));
   };
 
   return {
