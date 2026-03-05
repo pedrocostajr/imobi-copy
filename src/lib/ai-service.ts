@@ -40,25 +40,30 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 
     const discovered = await deepDiscovery(GEMINI_API_KEY);
 
-    // Preference list for 2026
+    // Preference list for 2026 - We will try ALL of these if quota is hit
     const preference = [
         "gemini-2.5-flash", "gemini-2.1-flash", "gemini-2.0-flash",
         "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro",
         "gemini-pro", "gemini-1.0-pro"
     ];
 
-    let selectedModel = preference.find(p => discovered.includes(p)) || discovered[0] || "gemini-1.5-flash";
+    // Priority filter: only try models actually listed by Google
+    const modelsToTry = preference.filter(p => discovered.includes(p));
+    if (modelsToTry.length === 0 && discovered.length > 0) {
+        modelsToTry.push(discovered[0]); // Fallback to first available if none in preference
+    } else if (modelsToTry.length === 0) {
+        modelsToTry.push("gemini-1.5-flash"); // Absolute fallback
+    }
 
-    console.log(`🎯 Modelo Escolhido: ${selectedModel}`);
+    console.log(`📋 Sequência de modelos para tentativa: ${modelsToTry.join(", ")}`);
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
 
-    const systemPrompt = `Você é um Copywriter Especialista em Marketing Imobiliário. Tom: ${data.tom}. 
-DADOS: ${data.tipo} em ${data.cidade}/${data.bairro}. Público: ${data.publico}. Valor: ${valorFinal}. Objetivo: ${data.objetivo}.
+    // Prompt ultra-estruturado para evitar truncamento e garantir completude
+    const systemPrompt = `Você é um Copywriter Imobiliário. Tom: ${data.tom}. Objetivo: ${data.objetivo}.
+DADOS: ${data.tipo} em ${data.cidade}/${data.bairro}. Público: ${data.publico}. Valor: ${valorFinal}.
 
-Crie uma copy envolvente para anúncio. NÃO cite os nomes das etapas AIDA (Atenção, Interesse, etc).
-
-OBRIGATÓRIO: Forneça a resposta estruturada EXATAMENTE nestes ${data.modoAvancado ? '8' : '5'} blocos numerados abaixo, sem pular nenhum:
+INSTRUÇÃO: Gere os ${data.modoAvancado ? '8' : '5'} blocos numerados abaixo. SEJA PRECISO E BREVE para garantir que o Google entregue tudo sem cortes.
 
 1. COPY PRINCIPAL:
 2. HEADLINE PARA IMAGEM:
@@ -69,55 +74,57 @@ ${data.modoAvancado ? `6. VARIAÇÕES DE HEADLINE:
 7. VARIAÇÕES DE CTA:
 8. ROTEIRO PARA REELS:` : ''}`;
 
-
-
-
-
-    const endpoints = [
-        `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`,
-        `https://generativelanguage.googleapis.com/v1/models/${selectedModel}:generateContent`
-    ];
-
     let lastError = "";
 
-    for (const url of endpoints) {
-        try {
-            console.log(`📡 Tentando endpoint: ${url}...`);
-            const response = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemPrompt }] }],
-                    generationConfig: {
-                        temperature: 0.7,
-                        maxOutputTokens: 2500,
-                        topP: 0.95
-                    }
-                }),
-            });
+    // Outer loop: iterate through MODELS
+    for (const modelId of modelsToTry) {
+        const endpoints = [
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent`,
+            `https://generativelanguage.googleapis.com/v1/models/${modelId}:generateContent`
+        ];
 
-            if (response.ok) {
-                const resData = await response.json();
-                const content = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                console.log("📄 Conteúdo bruto recebido:", content);
-                console.log(`🎉 Sucesso com ${selectedModel}!`);
-                return parseCopyResponse(content);
+        // Inner loop: iterate through ENDPOINTS for each model
+        for (const url of endpoints) {
+            try {
+                console.log(`📡 Tentando ${modelId} em ${url}...`);
+                const response = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: systemPrompt }] }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 2500,
+                            topP: 0.95
+                        }
+                    }),
+                });
+
+                if (response.ok) {
+                    const resData = await response.json();
+                    const content = resData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                    console.log("📄 Conteúdo bruto recebido:", content);
+                    console.log(`🎉 Sucesso total com ${modelId}!`);
+                    return parseCopyResponse(content);
+                }
+
+                const errorBody = await response.json().catch(() => ({}));
+                lastError = errorBody.error?.message || "Erro desconhecido";
+
+                // If Quota Exceeded (429), break inner loop to try NEXT model
+                if (response.status === 429) {
+                    console.warn(`⏳ Cota excedida para ${modelId}. Pulando para o próximo modelo...`);
+                    break;
+                }
+
+                console.warn(`❌ Falha em ${modelId} (${url}): ${response.status} - ${lastError}`);
+            } catch (e: any) {
+                lastError = e.message;
             }
-
-
-            const errorBody = await response.json().catch(() => ({}));
-            lastError = errorBody.error?.message || "Erro desconhecido";
-            console.warn(`❌ Falha: ${response.status} - ${lastError}`);
-
-            if (response.status === 403) {
-                throw new Error("Sua chave de API não tem permissão para este modelo. Verifique se ativou a 'Generative Language API' no Google Cloud.");
-            }
-        } catch (e: any) {
-            lastError = e.message;
         }
     }
 
-    throw new Error(`Falha total. Verifique o console (F12) para o 'Diagnóstico Profundo'. Erro final: ${lastError}`);
+    throw new Error(`Exaurimos todos os modelos disponíveis e limites da API. Por favor, aguarde alguns minutos ou reduza a frequência de uso. Erro final: ${lastError}`);
 }
 
 export async function generateImage(prompt: string): Promise<string> {
