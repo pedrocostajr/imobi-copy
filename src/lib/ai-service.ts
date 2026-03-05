@@ -1,7 +1,6 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
-// Using v1beta for both to maximize compatibility with current AI Studio keys
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
 const IMAGEN_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
