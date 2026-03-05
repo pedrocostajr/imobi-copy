@@ -1,15 +1,16 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
-// Note: Using direct Google API endpoints because Supabase Edge Functions 
-// encountered persistent network connectivity issues in the user's environment.
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
+// Using stable v1 endpoint for Gemini 1.5 Flash
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+// Using v1beta specifically for Imagen 3 support
+const IMAGEN_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict";
 
 export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
-    console.log("🚀 Realizando chamada direta ao Gemini API...");
+    console.log("🚀 Iniciando geração de copy stable...");
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
     if (!GEMINI_API_KEY) {
-        throw new Error("VITE_GEMINI_API_KEY não encontrada no seu arquivo .env");
+        throw new Error("VITE_GEMINI_API_KEY não encontrada. Verifique as variáveis de ambiente.");
     }
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
@@ -47,8 +48,8 @@ CTA RECOMENDADO:`;
 
         if (!response.ok) {
             const error = await response.json();
-            console.error("❌ Erro Google API:", error);
-            throw new Error(`Google API Error ${response.status}: ${error.error?.message || 'Falha na IA'}`);
+            console.error("❌ Erro Gemini API:", error);
+            throw new Error(`Erro Gemini ${response.status}: ${error.error?.message || 'Falha na geração'}`);
         }
 
         const result = await response.json();
@@ -61,18 +62,15 @@ CTA RECOMENDADO:`;
 }
 
 export async function generateImage(prompt: string): Promise<string> {
-    console.log("🚀 Realizando chamada direta ao Imagen API...");
+    console.log("🚀 Iniciando geração de imagem stable...");
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
     if (!GEMINI_API_KEY) {
-        throw new Error("VITE_GEMINI_API_KEY necessária para fotos.");
+        throw new Error("VITE_GEMINI_API_KEY necessária para gerar fotos.");
     }
 
-    // Using v1beta for Imagen 3 support
-    const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_API_KEY}`;
-
     try {
-        const response = await fetch(IMAGEN_URL, {
+        const response = await fetch(`${IMAGEN_API_URL}?key=${GEMINI_API_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -84,10 +82,15 @@ export async function generateImage(prompt: string): Promise<string> {
         if (!response.ok) {
             const error = await response.json();
             console.error("❌ Erro Imagen API:", error);
-            throw new Error(`Imagen Error: ${error.error?.message || 'Falha ao gerar foto'}`);
+            throw new Error(`Erro Imagen ${response.status}: ${error.error?.message || 'Falha na foto'}`);
         }
 
         const result = await response.json();
+
+        if (!result.predictions?.[0]?.bytesBase64Encoded) {
+            throw new Error("A API de imagem não retornou dados válidos.");
+        }
+
         return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
     } catch (error: any) {
         console.error("🚨 Erro crítico em generateImage:", error);

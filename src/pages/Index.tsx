@@ -14,7 +14,7 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const activeEngine = "Gemini 1.5 (Direct)";
+  const activeEngine = "Gemini 1.5 (Stable)";
 
   const handleGenerate = async (data: CopyFormData) => {
     setIsLoading(true);
