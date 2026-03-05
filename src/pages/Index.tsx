@@ -14,6 +14,8 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const activeEngine = import.meta.env.VITE_OPENAI_API_KEY ? "GPT-4o (OpenAI)" : "Gemini 2.0 (Google)";
+
   const handleGenerate = async (data: CopyFormData) => {
     setIsLoading(true);
     setResult(null);
@@ -56,7 +58,7 @@ const Index = () => {
       <section className="container max-w-5xl mx-auto px-4 pt-12 pb-8 text-center">
         <div className="inline-flex items-center gap-1.5 bg-accent/10 text-accent border border-accent/20 rounded-full px-3 py-1 text-xs font-medium mb-6">
           <Sparkles className="h-3 w-3" />
-          Powered by IA
+          Gerado por {activeEngine}
         </div>
         <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-3">
           Gere anúncios imobiliários
