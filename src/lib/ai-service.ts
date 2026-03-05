@@ -53,24 +53,44 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
 
-    const systemPrompt = `Você é um Copywriter Especialista em Imóveis. 
-DADOS: ${data.tipo} em ${data.cidade}/${data.bairro}. Público: ${data.publico}. Valor: ${valorFinal}. Tom: ${data.tom}. Objetivo: ${data.objetivo}.
+    const systemPrompt = `Você é um Copywriter Especialista em Marketing Imobiliário. 
+DADOS DO IMÓVEL: ${data.tipo} em ${data.cidade}/${data.bairro}. 
+PÚBLICO-ALVO: ${data.publico}. 
+VALOR: ${valorFinal}. 
+TOM DA COMUNICAÇÃO: ${data.tom}. 
+OBJETIVO: ${data.objetivo}.
+DIFERENCIAIS: ${data.diferencial || 'Não informados'}.
 
-Crie uma copy envolvente e persuasiva focada em conversão. 
+Crie uma copy envolvente e persuasiva focada em conversão, utilizando a técnica AIDA de forma implícita (sem citar os nomes das etapas).
 
-IMPORTANTE: 
-1. NÃO inclua os nomes das etapas da técnica AIDA (Atenção, Interesse, Desejo, Ação) no meio do texto. Quero apenas o conteúdo pronto para copiar e colar.
-2. Se houver diferenciais como "${data.diferencial}", destaque-os de forma natural.
+ESTRUTURA OBRIGATÓRIA DA RESPOSTA (Responda APENAS com estes títulos):
 
-${data.modoAvancado ? 'INCLUA TAMBÉM: 3 variações de headline, 2 de CTA e um Roteiro para Reels de 30 segundos (com indicações de cena e fala).' : ''}
-
-Responda estruturando exatamente com estes títulos:
 COPY PRINCIPAL:
+(Uma copy completa e persuasiva)
+
 HEADLINE PARA IMAGEM:
+(Uma frase curta e impactante)
+
 VERSÃO RESUMIDA:
+(Para legendas rápidas)
+
 MENSAGEM WHATSAPP:
+(Abordagem direta e cordial)
+
 CTA RECOMENDADO:
-${data.modoAvancado ? 'VARIAÇÕES DE HEADLINE:\nVARIAÇÕES DE CTA:\nROTEIRO PARA REELS:' : ''}`;
+(Chamada para ação clara)
+
+${data.modoAvancado ? `
+VARIAÇÕES DE HEADLINE:
+(3 opções extras)
+
+VARIAÇÕES DE CTA:
+(2 opções extras)
+
+ROTEIRO PARA REELS:
+(Roteiro de 30s com indicações de cena e fala)
+` : ''}`;
+
 
 
 

@@ -31,14 +31,15 @@ export function parseCopyResponse(content: string): CopyResult {
 
   // Dynamic blocks to find
   const markers = [
-    { key: "copyPrincipal", labels: ["COPY PRINCIPAL"] },
-    { key: "headline", labels: ["HEADLINE PARA IMAGEM", "HEADLINE"] },
-    { key: "versaoResumida", labels: ["VERSÃO RESUMIDA", "VERSAO RESUMIDA"] },
-    { key: "mensagemWhatsapp", labels: ["MENSAGEM WHATSAPP", "MENSAGEM DO WHATSAPP"] },
-    { key: "ctaRecomendado", labels: ["CTA RECOMENDADO", "CTA"] },
-    { key: "roteiroReels", labels: ["ROTEIRO PARA REELS", "ROTEIRO REELS"] },
-    { key: "variacoesHeadline", labels: ["VARIAÇÕES DE HEADLINE", "VARIACOES DE HEADLINE"] },
-    { key: "variacoesCta", labels: ["VARIAÇÕES DE CTA", "VARIACOES DE CTA"] },
+    { key: "copyPrincipal", labels: ["COPY PRINCIPAL", "TEXTO PRINCIPAL"] },
+    { key: "headline", labels: ["HEADLINE PARA IMAGEM", "HEADLINE", "TÍTULO"] },
+    { key: "versaoResumida", labels: ["VERSÃO RESUMIDA", "VERSAO RESUMIDA", "RESUMO"] },
+    { key: "mensagemWhatsapp", labels: ["MENSAGEM WHATSAPP", "MENSAGEM DO WHATSAPP", "WHATSAPP"] },
+    { key: "ctaRecomendado", labels: ["CTA RECOMENDADO", "CTA", "CHAMADA PARA AÇÃO"] },
+    { key: "roteiroReels", labels: ["ROTEIRO PARA REELS", "ROTEIRO REELS", "REELS"] },
+    { key: "variacoesHeadline", labels: ["VARIAÇÕES DE HEADLINE", "VARIACOES DE HEADLINE", "OUTRAS HEADLINES"] },
+    { key: "variacoesCta", labels: ["VARIAÇÕES DE CTA", "VARIACOES DE CTA", "OUTROS CTAS"] },
+
   ];
 
   const sections: Record<string, string[]> = {};
