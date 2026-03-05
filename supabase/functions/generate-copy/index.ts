@@ -15,7 +15,11 @@ serve(async (req) => {
     const { tipo, cidade, bairro, valor, valorPersonalizado, temEntrada, entrada, parcelas, publico, diferencial, estagio, objetivo, tom, modoAvancado } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY IS MISSING");
+      throw new Error("LOVABLE_API_KEY is not configured in Supabase secrets");
+    }
+    console.log("LOVABLE_API_KEY found, initiating fetch...");
 
     const valorFinal = valor === "Personalizado" ? valorPersonalizado : valor;
 
