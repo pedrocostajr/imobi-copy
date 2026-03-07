@@ -1,19 +1,15 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
     Sparkles,
     Plus,
-    Trash2,
-    Copy,
     Send,
-    ChevronRight,
-    Info,
     Zap,
     CheckCircle2,
-    MapPin,
     Tag,
     Star,
     Phone,
-    Eraser
+    Eraser,
+    Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,14 +46,26 @@ const BLOCK_SUGGESTIONS = {
         "💰 Fluxo de pagamento facilitado",
         "📉 Valor abaixo do mercado por tempo limitado",
     ],
+    gatilhos: [
+        "🔥 Poucas unidades disponíveis!",
+        "⏳ Condição especial por tempo limitado.",
+        "💎 Unidade exclusiva com valor de pré-lançamento.",
+        "🚀 Oportunidade única para investidores.",
+        "📈 Região com alto potencial de valorização.",
+    ],
     cta: [
         "📲 Clique no link da bio e agende sua visita!",
         "💬 Comente 'EU QUERO' para receber o material completo.",
         "👉 Saiba mais clicando no botão abaixo.",
         "📞 Entre em contato agora pelo WhatsApp: [Telefone]",
-        "🔥 Poucas unidades disponíveis, não perca!",
+        "🔥 Agende sua visita hoje mesmo!",
+    ],
+    aida: [
+        "🚨 ATENÇÃO: [Headline impactante]\n\n💡 INTERESSE: [Benefício principal do imóvel]\n\n💖 DESEJO: [Detalhe emocional/exclusivo]\n\n👉 AÇÃO: [Clique no botão abaixo]",
     ]
 };
+
+const EMOJIS = ["🏠", "🔑", "💎", "📍", "💰", "✨", "🚀", "🏊‍♂️", "🌳", "🏢", "🛋️", "🚗", "✅", "📲"];
 
 const ManualCopyForm = ({ onSave, initialData }: ManualCopyFormProps) => {
     const { toast } = useToast();
@@ -67,8 +75,9 @@ const ManualCopyForm = ({ onSave, initialData }: ManualCopyFormProps) => {
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const addBlock = (text: string) => {
+    const addText = (text: string, isBlock = true) => {
         setCopyPrincipal((prev) => {
+            if (!isBlock) return prev + text;
             const separator = prev.length > 0 ? "\n" : "";
             return prev + separator + text;
         });
@@ -82,7 +91,6 @@ const ManualCopyForm = ({ onSave, initialData }: ManualCopyFormProps) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Create a basic result object from the manually built copy
         const result: CopyResult = {
             copyPrincipal,
             headline: headline || "Oportunidade Imperdível",
@@ -104,16 +112,28 @@ const ManualCopyForm = ({ onSave, initialData }: ManualCopyFormProps) => {
                 {/* Builder Panel */}
                 <div className="lg:col-span-7 space-y-6">
                     <div className="glass-card rounded-xl p-5 border-primary/20 bg-primary/5">
-                        <div className="flex items-center gap-2 mb-4">
-                            <Sparkles className="h-5 w-5 text-primary" />
-                            <h3 className="font-display font-bold text-foreground">Montador de Legenda</h3>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="h-5 w-5 text-primary" />
+                                <h3 className="font-display font-bold text-foreground">Montador de Legenda</h3>
+                            </div>
+                            <div className="flex gap-1 bg-background/50 p-1 rounded-lg border border-border/50">
+                                {EMOJIS.slice(0, 7).map(e => (
+                                    <button key={e} type="button" onClick={() => addText(e, false)} className="hover:scale-125 transition-transform px-1">{e}</button>
+                                ))}
+                            </div>
                         </div>
 
                         <div className="space-y-5">
-                            <CategorySection title="Impacto Inicial" icon={<Zap className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.abertura} onAdd={addBlock} />
-                            <CategorySection title="Diferenciais" icon={<CheckCircle2 className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.caracteristicas} onAdd={addBlock} />
-                            <CategorySection title="Status & Preço" icon={<Tag className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.status} onAdd={addBlock} />
-                            <CategorySection title="Chamadas (CTA)" icon={<Phone className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.cta} onAdd={addBlock} />
+                            <CategorySection title="Impacto Inicial" icon={<Zap className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.abertura} onAdd={addText} />
+                            <CategorySection title="Diferenciais" icon={<CheckCircle2 className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.caracteristicas} onAdd={addText} />
+                            <CategorySection title="Status & Preço" icon={<Tag className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.status} onAdd={addText} />
+                            <CategorySection title="Gatilhos Mentais" icon={<Star className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.gatilhos} onAdd={addText} />
+                            <CategorySection title="Chamadas (CTA)" icon={<Phone className="h-4 w-4" />} suggestions={BLOCK_SUGGESTIONS.cta} onAdd={addText} />
+
+                            <div className="pt-2 border-t border-border/50">
+                                <CategorySection title="Estrutura AIDA (Template)" icon={<LayoutIcon size={16} />} suggestions={BLOCK_SUGGESTIONS.aida} onAdd={addText} />
+                            </div>
                         </div>
                     </div>
 
@@ -149,14 +169,23 @@ const ManualCopyForm = ({ onSave, initialData }: ManualCopyFormProps) => {
                 <div className="lg:col-span-5 flex flex-col h-full">
                     <div className="glass-card rounded-xl p-6 border-accent/20 flex flex-col flex-1 gap-4">
                         <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-display font-bold text-foreground flex items-center gap-2">
-                                <LayoutIcon />
-                                Sua Legenda
-                            </h3>
-                            <Button variant="ghost" size="sm" onClick={clearCopy} className="h-8 px-2 text-muted-foreground hover:text-destructive gap-1.5">
-                                <Eraser className="h-3.5 w-3.5" />
-                                Limpar
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-display font-bold text-foreground flex items-center gap-2">
+                                    <LayoutIcon size={18} />
+                                    Sua Legenda
+                                </h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1 mr-2">
+                                    {EMOJIS.slice(7).map(e => (
+                                        <button key={e} type="button" onClick={() => addText(e, false)} className="hover:scale-125 transition-transform text-sm">{e}</button>
+                                    ))}
+                                </div>
+                                <Button type="button" variant="ghost" size="sm" onClick={clearCopy} className="h-8 px-2 text-muted-foreground hover:text-destructive gap-1.5">
+                                    <Eraser className="h-3.5 w-3.5" />
+                                    Limpar
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="relative flex-1 group">
@@ -164,7 +193,7 @@ const ManualCopyForm = ({ onSave, initialData }: ManualCopyFormProps) => {
                                 ref={textareaRef}
                                 value={copyPrincipal}
                                 onChange={(e) => setCopyPrincipal(e.target.value)}
-                                placeholder="Vá clicando nos blocos ao lado ou digite livremente aqui para montar sua legenda perfeita..."
+                                placeholder="Vá clicando nos blocos ao lado ou adicione emojis para montar sua legenda..."
                                 className="w-full h-full min-h-[400px] lg:min-h-0 bg-background/30 border-dashed border-2 border-border/50 focus-visible:border-primary/50 text-base leading-relaxed p-4 resize-none"
                             />
                             <div className="absolute right-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -175,6 +204,7 @@ const ManualCopyForm = ({ onSave, initialData }: ManualCopyFormProps) => {
                         </div>
 
                         <Button
+                            type="button"
                             onClick={handleSubmit}
                             disabled={!copyPrincipal.trim()}
                             className="w-full gradient-primary text-primary-foreground font-bold h-12 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2 animate-pulse-glow"
@@ -190,7 +220,7 @@ const ManualCopyForm = ({ onSave, initialData }: ManualCopyFormProps) => {
     );
 };
 
-function CategorySection({ title, icon, suggestions, onAdd }: { title: string, icon: React.ReactNode, suggestions: string[], onAdd: (t: string) => void }) {
+function CategorySection({ title, icon, suggestions, onAdd }: { title: string, icon: React.ReactNode, suggestions: string[], onAdd: (t: string, isBlock?: boolean) => void }) {
     return (
         <div className="space-y-2.5">
             <div className="flex items-center gap-2 px-1">
@@ -214,9 +244,9 @@ function CategorySection({ title, icon, suggestions, onAdd }: { title: string, i
     );
 }
 
-function LayoutIcon() {
+function LayoutIcon({ size = 18 }: { size?: number }) {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><line x1="3" x2="21" y1="9" y2="9" /><line x1="9" x2="9" y1="21" y2="9" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><line x1="3" x2="21" y1="9" y2="9" /><line x1="9" x2="9" y1="21" y2="9" /></svg>
     );
 }
 
