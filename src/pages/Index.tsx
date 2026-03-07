@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Building2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import CopyForm from "@/components/CopyForm";
 import CopyResults from "@/components/CopyResults";
 import CreativeGenerator from "@/components/CreativeGenerator";
 import AIPhotoGenerator from "@/components/AIPhotoGenerator";
+import ManualCopyForm from "@/components/ManualCopyForm";
 import { CopyFormData, CopyResult } from "@/lib/copy-types";
 import { generateCopy } from "@/lib/ai-service";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const Index = () => {
   const [result, setResult] = useState<CopyResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [copyMode, setCopyMode] = useState<"ai" | "manual">("ai");
   const [lastFormData, setLastFormData] = useState<CopyFormData | null>(null);
   const { toast } = useToast();
 
@@ -97,7 +100,33 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="copy">
-            <CopyForm onSubmit={handleGenerate} isLoading={isLoading} />
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center justify-center gap-4 mb-2">
+                <Button
+                  variant={copyMode === "ai" ? "default" : "outline"}
+                  onClick={() => setCopyMode("ai")}
+                  className={`flex-1 max-w-[200px] gap-2 rounded-xl h-11 ${copyMode === "ai" ? "gradient-primary border-none shadow-md" : ""}`}
+                >
+                  <Sparkles className={`h-4 w-4 ${copyMode === "ai" ? "text-primary-foreground" : "text-primary"}`} />
+                  Gerar com IA
+                </Button>
+                <Button
+                  variant={copyMode === "manual" ? "default" : "outline"}
+                  onClick={() => setCopyMode("manual")}
+                  className={`flex-1 max-w-[200px] gap-2 rounded-xl h-11 ${copyMode === "manual" ? "bg-accent text-accent-foreground border-none shadow-md" : ""}`}
+                >
+                  <div className="h-4 w-4 flex items-center justify-center font-bold text-[10px] border-2 border-current rounded-sm">M</div>
+                  Sem IA (Manual)
+                </Button>
+              </div>
+
+              {copyMode === "ai" ? (
+                <CopyForm onSubmit={handleGenerate} isLoading={isLoading} />
+              ) : (
+                <ManualCopyForm onSave={(data) => setResult(data)} initialData={result} />
+              )}
+            </div>
+
             {result && (
               <div className="mt-10 animate-fade-up">
                 <CopyResults result={result} onRegenerate={handleRegenerate} />
