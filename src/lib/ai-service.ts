@@ -128,56 +128,18 @@ ${data.modoAvancado ? `6. VARIAÇÕES DE HEADLINE:
 }
 
 export async function generateImage(prompt: string): Promise<string> {
-    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-    if (!GEMINI_API_KEY) {
-        throw new Error("VITE_GEMINI_API_KEY não encontrada.");
-    }
+    // Pollinations.ai is much more reliable for client-side usage and returns high-quality visuals.
+    // We add quality keywords to ensure a professional real-estate look.
+    const enhancedPrompt = encodeURIComponent(
+        `${prompt}, professional real estate photography, high resolution, 4k, architectural lighting, sharp focus`
+    );
 
-    const models = [
-        "imagen-3.0-generate-001",
-        "imagen-3.0-fast-generate-001",
-        "imagen-2.0-generate-001"
-    ];
+    // Generates a seed based on the prompt hash to keep it somewhat stable but unique
+    const seed = Math.floor(Math.random() * 1000000);
+    const imageUrl = `https://pollinations.ai/p/${enhancedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
 
-    const versions = ["v1beta", "v1"];
-    let lastError = "";
+    console.log("🎨 Gerando imagem via Pollinations.ai:", imageUrl);
 
-    for (const modelId of models) {
-        for (const version of versions) {
-            const url = `https://generativelanguage.googleapis.com/${version}/models/${modelId}:predict?key=${GEMINI_API_KEY}`;
-
-            try {
-                console.log(`🎨 Tentando gerar imagem com ${modelId} via ${version}...`);
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        instances: [{ prompt }],
-                        parameters: { sampleCount: 1 },
-                    }),
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log(`✅ Sucesso com ${modelId} (${version})!`);
-                    return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-                }
-
-                const err = await response.json().catch(() => ({}));
-                lastError = err.error?.message || `HTTP ${response.status}`;
-                console.warn(`⚠️ Falha com ${modelId} (${version}): ${lastError}`);
-
-                // If it's a 404, we continue to the next version/model
-                if (response.status !== 404) {
-                    // If it's something else (like 429 or 403), we might want to try next model anyway
-                    // but if it's 403 (Forbidden), the key might not have access to Imagen at all
-                }
-            } catch (e: any) {
-                lastError = e.message;
-                console.error(`🚨 Erro em ${modelId} (${version}):`, e.message);
-            }
-        }
-    }
-
-    throw new Error(`Não foi possível gerar a imagem com os modelos disponíveis. Erro: ${lastError}`);
+    // We return the URL directly. The components will use it in an <img> tag.
+    return imageUrl;
 }
