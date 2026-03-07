@@ -129,28 +129,55 @@ ${data.modoAvancado ? `6. VARIAÇÕES DE HEADLINE:
 
 export async function generateImage(prompt: string): Promise<string> {
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-    // Imagen 3 normally requires v1beta
-    const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${GEMINI_API_KEY}`;
-
-    try {
-        const response = await fetch(IMAGEN_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                instances: [{ prompt }],
-                parameters: { sampleCount: 1 },
-            }),
-        });
-
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error?.message || "Falha na foto");
-        }
-
-        const result = await response.json();
-        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-    } catch (e: any) {
-        console.error("🚨 Erro Foto:", e.message);
-        throw e;
+    if (!GEMINI_API_KEY) {
+        throw new Error("VITE_GEMINI_API_KEY não encontrada.");
     }
+
+    const models = [
+        "imagen-3.0-generate-001",
+        "imagen-3.0-fast-generate-001",
+        "imagen-2.0-generate-001"
+    ];
+
+    const versions = ["v1beta", "v1"];
+    let lastError = "";
+
+    for (const modelId of models) {
+        for (const version of versions) {
+            const url = `https://generativelanguage.googleapis.com/${version}/models/${modelId}:predict?key=${GEMINI_API_KEY}`;
+
+            try {
+                console.log(`🎨 Tentando gerar imagem com ${modelId} via ${version}...`);
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        instances: [{ prompt }],
+                        parameters: { sampleCount: 1 },
+                    }),
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log(`✅ Sucesso com ${modelId} (${version})!`);
+                    return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                }
+
+                const err = await response.json().catch(() => ({}));
+                lastError = err.error?.message || `HTTP ${response.status}`;
+                console.warn(`⚠️ Falha com ${modelId} (${version}): ${lastError}`);
+
+                // If it's a 404, we continue to the next version/model
+                if (response.status !== 404) {
+                    // If it's something else (like 429 or 403), we might want to try next model anyway
+                    // but if it's 403 (Forbidden), the key might not have access to Imagen at all
+                }
+            } catch (e: any) {
+                lastError = e.message;
+                console.error(`🚨 Erro em ${modelId} (${version}):`, e.message);
+            }
+        }
+    }
+
+    throw new Error(`Não foi possível gerar a imagem com os modelos disponíveis. Erro: ${lastError}`);
 }
