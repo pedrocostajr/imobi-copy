@@ -48,12 +48,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Maintenance Notice */}
-      <div className="bg-amber-950 py-2.5 px-4 text-center border-b border-amber-500/20">
-        <p className="text-sm font-semibold text-amber-200 animate-pulse flex items-center justify-center gap-2">
-          <span>🚀</span> O sistema está passando por uma atualização importante. Algumas funções podem oscilar temporariamente.
-        </p>
-      </div>
 
       {/* Header */}
       <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-50">
