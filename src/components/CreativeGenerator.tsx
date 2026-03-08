@@ -80,6 +80,8 @@ const CreativeGenerator = () => {
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const generatingRef = useRef(false);
+  const watchdogRef = useRef<NodeJS.Timeout | null>(null);
 
   const format = FORMATS[formatIdx];
 
@@ -92,35 +94,50 @@ const CreativeGenerator = () => {
       return;
     }
 
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
     setIsGenerating(true);
+    generatingRef.current = true;
+
     try {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
       const imageUrl = await generateImage(prompt);
 
-      console.log("📡 Baixando imagem IA para Criativo (v2.4)...");
-      const response = await fetch(imageUrl);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const blob = await response.blob();
-      const localUrl = URL.createObjectURL(blob);
+      // Watchdog de 60 segundos (v2.5)
+      watchdogRef.current = setTimeout(() => {
+        if (generatingRef.current) {
+          setIsGenerating(false);
+          generatingRef.current = false;
+          toast({
+            title: "O servidor demorou muito (v2.5)",
+            description: "A imagem pode não carregar automaticamente.",
+            variant: "destructive"
+          });
+        }
+      }, 60000);
 
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
         setImage(img);
         setIsGenerating(false);
-        toast({ title: "Imagem gerada com IA! (v2.4)" });
+        generatingRef.current = false;
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
+        toast({ title: "Imagem gerada com IA! (v2.5)" });
       };
       img.onerror = () => {
         setIsGenerating(false);
-        toast({ title: "Erro ao processar imagem da IA (v2.4)", variant: "destructive" });
+        generatingRef.current = false;
+        if (watchdogRef.current) clearTimeout(watchdogRef.current);
+        toast({ title: "Erro ao processar imagem da IA (v2.5)", variant: "destructive" });
       };
-      img.src = localUrl;
+      img.src = imageUrl;
     } catch (err: any) {
-      console.error("🚨 Erro Criativo v2.4:", err);
+      console.error("🚨 Erro Criativo v2.5:", err);
       setIsGenerating(false);
+      generatingRef.current = false;
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
       toast({
-        title: "Erro na geração (v2.4)",
+        title: "Erro na geração (v2.5)",
         description: err.message || "Tente novamente.",
         variant: "destructive"
       });
