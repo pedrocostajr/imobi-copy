@@ -128,19 +128,16 @@ ${data.modoAvancado ? `6. VARIAÇÕES DE HEADLINE:
 }
 
 export async function generateImage(prompt: string): Promise<string> {
-    // Pollinations.ai is much more reliable for client-side usage.
-    // We trim the prompt to avoid URL length issues and add quality keywords.
-    const cleanPrompt = prompt.substring(0, 400);
-    const qualityKeywords = "professional real estate photography, 4k, architectural lighting, sharp focus";
-    const enhancedPrompt = encodeURIComponent(`${cleanPrompt}, ${qualityKeywords}`);
-
-    // Generates a random seed to keep images unique
+    // Pollinations.ai v2.3 - Simplified for maximum compatibility
+    const cleanPrompt = prompt.substring(0, 300).replace(/[^a-zA-Z0-9 ]/g, '');
+    const quality = "professional real estate photo, 4k, architectural";
+    const enhancedPrompt = encodeURIComponent(`${cleanPrompt}, ${quality}`);
     const seed = Math.floor(Math.random() * 1000000);
 
-    // Using image.pollinations.ai subdomain which is the most reliable for direct <img> tags.
-    const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=512&height=512&seed=${seed}&nologo=true&model=turbo&cache=${Date.now()}`;
+    // Most direct endpoint for browser usage
+    const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=512&height=512&seed=${seed}&nologo=true&model=turbo`;
 
-    console.log("🎨 Gerando URL da imagem via Pollinations.ai (512px, v2.2):", imageUrl);
+    console.log("🎨 Gerando URL da imagem (v2.3):", imageUrl);
 
     return imageUrl;
 }

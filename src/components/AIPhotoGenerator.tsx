@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Camera, Download, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,7 +51,14 @@ const AIPhotoGenerator = () => {
   const [selectedPreset, setSelectedPreset] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const watchdogRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    return () => {
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
+    };
+  }, []);
 
   const handlePresetChange = (value: string) => {
     setSelectedPreset(value);
@@ -71,8 +78,28 @@ const AIPhotoGenerator = () => {
     try {
       const imageUrl = await generateImage(prompt);
       setGeneratedImage(imageUrl);
-      // O estado isLoading será desativado pelo evento onLoad da imagem no JSX
-      toast({ title: "Iniciando geração (v2.2)..." });
+
+      // Watchdog de 45 segundos para evitar carregamento infinito
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
+      watchdogRef.current = setTimeout(() => {
+        if (isLoading) {
+          setIsLoading(false);
+          toast({
+            title: "O servidor demorou muito (v2.3)",
+            description: (
+              <div className="space-y-1">
+                <p>A imagem ainda não carregou. Você pode tentar abrir diretamente no link abaixo:</p>
+                <a href={imageUrl} target="_blank" rel="noreferrer" className="text-xs underline font-bold break-all">
+                  {imageUrl.substring(0, 50)}...
+                </a>
+              </div>
+            ),
+            variant: "destructive"
+          });
+        }
+      }, 45000);
+
+      toast({ title: "Gerando imagem (v2.3)..." });
     } catch (err: any) {
       console.error(err);
       toast({
@@ -197,15 +224,18 @@ const AIPhotoGenerator = () => {
                 <img
                   src={generatedImage}
                   alt="Foto gerada por IA"
-                  crossOrigin="anonymous"
-                  onLoad={() => setIsLoading(false)}
+                  onLoad={() => {
+                    setIsLoading(false);
+                    if (watchdogRef.current) clearTimeout(watchdogRef.current);
+                  }}
                   onError={() => {
                     setIsLoading(false);
+                    if (watchdogRef.current) clearTimeout(watchdogRef.current);
                     toast({
-                      title: "Erro ao carregar (v2.2)",
+                      title: "Erro ao carregar (v2.3)",
                       description: (
                         <div className="space-y-1">
-                          <p>Não foi possível carregar a imagem. O servidor de IA pode estar instável.</p>
+                          <p>Não foi possível carregar a imagem. O servidor de IA pode estar instável ou o prompt é muito complexo.</p>
                           <a href={generatedImage || "#"} target="_blank" rel="noreferrer" className="text-xs underline font-bold">
                             Tentar abrir em nova aba
                           </a>
