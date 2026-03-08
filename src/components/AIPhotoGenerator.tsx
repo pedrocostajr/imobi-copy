@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Camera, Download, Sparkles, Loader2, ExternalLink } from "lucide-react";
+import { Camera, Download, Sparkles, Loader2, ExternalLink, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -53,7 +53,6 @@ const AIPhotoGenerator = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
 
-  // Refs para garantir que o watchdog e eventos acessam o estado atualizado
   const loadingRef = useRef(false);
   const watchdogRef = useRef<NodeJS.Timeout | null>(null);
   const fallbackRef = useRef<NodeJS.Timeout | null>(null);
@@ -86,7 +85,6 @@ const AIPhotoGenerator = () => {
       return;
     }
 
-    // Reset states
     stopLoading();
     setIsLoading(true);
     loadingRef.current = true;
@@ -95,38 +93,38 @@ const AIPhotoGenerator = () => {
     try {
       const imageUrl = await generateImage(prompt);
 
-      // Timer para mostrar o link manual após 5 segundos
       fallbackRef.current = setTimeout(() => {
         if (loadingRef.current) setShowFallback(true);
-      }, 5000);
+      }, 3000); // 3 seconds to show help
 
-      // Watchdog de 60 segundos (v2.5)
       watchdogRef.current = setTimeout(() => {
         if (loadingRef.current) {
           stopLoading();
           toast({
-            title: "O servidor demorou muito (v2.5)",
-            description: "A imagem pode estar pronta mas seu navegador não a carregou. Tente abrir o link direto abaixo.",
+            title: "Timeout do Servidor (v2.6)",
+            description: "A imagem pode estar pronta mas o painel não carregou. Use os links de emergência.",
             variant: "destructive"
           });
-          // Força a exibição do link mesmo que tenha dado timeout
           setGeneratedImage(imageUrl);
         }
-      }, 60000);
+      }, 45000);
 
-      // Seta a imagem diretamente no src do <img>
       setGeneratedImage(imageUrl);
-
-      toast({ title: "Iniciando geração (v2.5)..." });
+      toast({ title: "Iniciando geração (v2.6)..." });
     } catch (err: any) {
-      console.error("🚨 Erro v2.5:", err);
+      console.error("🚨 Erro v2.6:", err);
       stopLoading();
       toast({
-        title: "Erro na conexão v2.5",
-        description: err.message || "Verifique sua internet.",
+        title: "Erro na conexão v2.6",
+        description: err.message || "Tente novamente.",
         variant: "destructive",
       });
     }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: "URL copiada!", description: "Cole em uma nova aba para testar." });
   };
 
   const handleDownload = () => {
@@ -146,7 +144,7 @@ const AIPhotoGenerator = () => {
             <Camera className="h-[18px] w-[18px] text-primary" />
             Estúdio de Fotos IA
           </h2>
-          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono">v2.5 stable</span>
+          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-mono">v2.6 stable</span>
         </div>
 
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-6 flex items-center gap-3">
@@ -154,8 +152,8 @@ const AIPhotoGenerator = () => {
             <Sparkles className="h-4 w-4 text-amber-500" />
           </div>
           <div>
-            <p className="text-sm font-medium text-amber-500">Recurso em Atualização (v2.5)</p>
-            <p className="text-xs text-amber-500/80">Otimizamos o gerador para maior velocidade. Se travar, clique no link direto que aparecerá.</p>
+            <p className="text-sm font-medium text-amber-500">Recurso em Atualização (v2.6)</p>
+            <p className="text-xs text-amber-500/80">Se a imagem não carregar no visor, use os botões de emergência que aparecerão abaixo.</p>
           </div>
         </div>
 
@@ -206,16 +204,25 @@ const AIPhotoGenerator = () => {
             </Button>
 
             {showFallback && generatedImage && (
-              <a
-                href={generatedImage}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 p-3 text-xs font-semibold text-amber-600 bg-amber-50 rounded-lg border border-amber-200 animate-pulse hover:bg-amber-100 transition-colors"
-                onClick={() => stopLoading()}
-              >
-                <ExternalLink className="h-4 w-4" />
-                A imagem está demorando? Clique aqui para abrir diretamente
-              </a>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={generatedImage}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-center gap-2 p-3 text-[10px] font-bold text-amber-600 bg-amber-50 rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors"
+                  onClick={() => stopLoading()}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Abrir link direto
+                </a>
+                <button
+                  onClick={() => copyToClipboard(generatedImage)}
+                  className="flex items-center justify-center gap-2 p-3 text-[10px] font-bold text-blue-600 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors"
+                >
+                  <Copy className="h-3 w-3" />
+                  Copiar URL
+                </button>
+              </div>
             )}
 
             {generatedImage && !isLoading && (
@@ -235,7 +242,7 @@ const AIPhotoGenerator = () => {
                 <div className="absolute inset-0 z-10 bg-muted/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 p-8 text-muted-foreground">
                   <Loader2 className="h-10 w-10 animate-spin text-primary" />
                   <p className="text-sm font-medium">Gerando sua foto...</p>
-                  <p className="text-[10px] text-center max-w-[200px]">Se demorar mais de 10s, use o link de emergência ao lado.</p>
+                  <p className="text-[10px] text-center max-w-[200px]">Isso pode levar até 1 minuto.</p>
                 </div>
               )}
 
@@ -247,8 +254,8 @@ const AIPhotoGenerator = () => {
                   onError={() => {
                     stopLoading();
                     toast({
-                      title: "Erro ao carregar (v2.5)",
-                      description: "Tente abrir o link direto ou recarregar a página.",
+                      title: "Erro no carregador (v2.6)",
+                      description: "Use o botão de 'Copiar URL' para testar se a IA gerou a imagem.",
                       variant: "destructive"
                     });
                   }}

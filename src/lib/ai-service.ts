@@ -1,10 +1,8 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
 
-// ... (Deep Discovery and generateCopy functions remain the same)
 async function deepDiscovery(apiKey: string): Promise<string[]> {
     const versions = ["v1beta", "v1"];
     let allModels: string[] = [];
-    console.log("🔍 Iniciando Descoberta Profunda de Modelos...");
     for (const v of versions) {
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/${v}/models?key=${apiKey}`);
@@ -48,16 +46,16 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 }
 
 export async function generateImage(prompt: string): Promise<string> {
-    // Pollinations.ai v2.5 - Maximum Reach Strategy
-    // Using the legacy /p/ endpoint which often survives better than /prompt/ subdomains in some networks
-    const cleanPrompt = prompt.substring(0, 300).replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚçÇ ]/g, ' ');
-    const quality = "real estate, high resolution, professional photography";
+    // Pollinations.ai v2.6 - Simplified High Stability Strategy
+    // Using the image.pollinations.ai subdomain which is the most reliable.
+    const cleanPrompt = prompt.trim().substring(0, 200).replace(/[?#&]/g, '');
+    const quality = "professional real estate photo, 4k, architectural";
     const encoded = encodeURIComponent(`${cleanPrompt}, ${quality}`);
 
-    // Use a unique seed and NO model parameter to avoid unstable beta features
+    // Seed and Cache Buster
     const seed = Math.floor(Math.random() * 1000000);
-    const imageUrl = `https://pollinations.ai/p/${encoded}?width=512&height=512&seed=${seed}&nologo=true`;
+    const imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&seed=${seed}&nologo=true&model=turbo`;
 
-    console.log("🎨 URL Gerada (v2.5):", imageUrl);
+    console.log("🎨 URL v2.6:", imageUrl);
     return imageUrl;
 }
