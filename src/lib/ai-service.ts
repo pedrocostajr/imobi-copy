@@ -137,10 +137,10 @@ export async function generateImage(prompt: string): Promise<string> {
     // Generates a random seed to keep images unique
     const seed = Math.floor(Math.random() * 1000000);
 
-    // Use the official image subdomain with turbo model which is excellent for speed
-    const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true&model=turbo`;
+    // Use the official image subdomain with default model for reliability and 768x768 for speed
+    const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=768&height=768&seed=${seed}&nologo=true`;
 
-    console.log("🎨 Gerando URL da imagem via Pollinations.ai (Turbo):", imageUrl);
+    console.log("🎨 Gerando URL da imagem via Pollinations.ai:", imageUrl);
 
     return imageUrl;
 }

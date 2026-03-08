@@ -81,7 +81,7 @@ const AIPhotoGenerator = () => {
           img.onerror = () => reject(new Error("Erro ao carregar a imagem gerada."));
         }),
         new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Tempo limite excedido ao carregar a imagem. Tente novamente.")), 20000)
+          setTimeout(() => reject(new Error("Tempo limite excedido. O servidor de imagens pode estar lento, tente novamente.")), 50000)
         )
       ]);
 
