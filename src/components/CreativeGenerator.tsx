@@ -97,21 +97,33 @@ const CreativeGenerator = () => {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
       const imageUrl = await generateImage(prompt);
 
+      console.log("📡 Baixando imagem IA para Criativo (v2.4)...");
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const blob = await response.blob();
+      const localUrl = URL.createObjectURL(blob);
+
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
         setImage(img);
         setIsGenerating(false);
-        toast({ title: "Imagem gerada com IA!" });
+        toast({ title: "Imagem gerada com IA! (v2.4)" });
       };
       img.onerror = () => {
         setIsGenerating(false);
-        toast({ title: "Erro ao carregar imagem da IA", variant: "destructive" });
+        toast({ title: "Erro ao processar imagem da IA (v2.4)", variant: "destructive" });
       };
-      img.src = imageUrl;
-    } catch (err) {
+      img.src = localUrl;
+    } catch (err: any) {
+      console.error("🚨 Erro Criativo v2.4:", err);
       setIsGenerating(false);
-      toast({ title: "Erro na geração", variant: "destructive" });
+      toast({
+        title: "Erro na geração (v2.4)",
+        description: err.message || "Tente novamente.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -324,8 +336,8 @@ const CreativeGenerator = () => {
                     type="button"
                     onClick={() => setColors({ primary: preset.primary, accent: preset.accent })}
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition-all ${colors.primary === preset.primary
-                        ? "border-primary bg-primary/10 text-foreground"
-                        : "border-border text-muted-foreground hover:border-primary/50"
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border text-muted-foreground hover:border-primary/50"
                       }`}
                   >
                     <span className="w-3 h-3 rounded-full border border-border/50" style={{ backgroundColor: preset.primary }} />

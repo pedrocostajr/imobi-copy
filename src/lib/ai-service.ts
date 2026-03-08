@@ -128,16 +128,16 @@ ${data.modoAvancado ? `6. VARIAÇÕES DE HEADLINE:
 }
 
 export async function generateImage(prompt: string): Promise<string> {
-    // Pollinations.ai v2.3 - Simplified for maximum compatibility
-    const cleanPrompt = prompt.substring(0, 300).replace(/[^a-zA-Z0-9 ]/g, '');
-    const quality = "professional real estate photo, 4k, architectural";
+    // Pollinations.ai v2.4 - Lighter prompt prep to keep Portuguese characters
+    const cleanPrompt = prompt.substring(0, 350).replace(/[#?&]/g, '');
+    const quality = "professional real estate photo, architectural lighting, sharp focus, high resolution";
     const enhancedPrompt = encodeURIComponent(`${cleanPrompt}, ${quality}`);
     const seed = Math.floor(Math.random() * 1000000);
 
-    // Most direct endpoint for browser usage
-    const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=512&height=512&seed=${seed}&nologo=true&model=turbo`;
+    // Fallback URL: simplest possible without model parameter if that's what's failing.
+    const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=512&height=512&seed=${seed}&nologo=true`;
 
-    console.log("🎨 Gerando URL da imagem (v2.3):", imageUrl);
+    console.log("🎨 Gerando URL da imagem (v2.4):", imageUrl);
 
     return imageUrl;
 }

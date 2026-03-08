@@ -77,38 +77,49 @@ const AIPhotoGenerator = () => {
 
     try {
       const imageUrl = await generateImage(prompt);
-      setGeneratedImage(imageUrl);
 
-      // Watchdog de 45 segundos para evitar carregamento infinito
+      // Watchdog de 60 segundos (v2.4)
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       watchdogRef.current = setTimeout(() => {
         if (isLoading) {
           setIsLoading(false);
           toast({
-            title: "O servidor demorou muito (v2.3)",
-            description: (
-              <div className="space-y-1">
-                <p>A imagem ainda não carregou. Você pode tentar abrir diretamente no link abaixo:</p>
-                <a href={imageUrl} target="_blank" rel="noreferrer" className="text-xs underline font-bold break-all">
-                  {imageUrl.substring(0, 50)}...
-                </a>
-              </div>
-            ),
+            title: "Timeout do Servidor (v2.4)",
+            description: "A IA está demorando muito. Tente novamente com um prompt mais curto.",
             variant: "destructive"
           });
         }
-      }, 45000);
+      }, 60000);
 
-      toast({ title: "Gerando imagem (v2.3)..." });
-    } catch (err: any) {
-      console.error(err);
+      // NOVO v2.4: Fetch direto para garantir que a imagem baixou ANTES de desativar o loader
+      console.log("📡 Baixando imagem v2.4...");
+      const response = await fetch(imageUrl);
+      if (!response.ok) throw new Error(`Servidor de imagem retornou erro ${response.status}`);
+
+      const blob = await response.blob();
+      const localUrl = URL.createObjectURL(blob);
+
+      setGeneratedImage(localUrl);
+      setIsLoading(false);
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
+
       toast({
-        title: "Erro ao gerar foto",
-        description: err.message || "Tente novamente em alguns instantes.",
+        title: "Foto gerada! (v2.4)",
+        description: (
+          <a href={imageUrl} target="_blank" rel="noreferrer" className="text-xs underline block mt-1 font-bold">
+            Ver link direto da IA (Debug)
+          </a>
+        )
+      });
+    } catch (err: any) {
+      console.error("🚨 Erro v2.4:", err);
+      setIsLoading(false);
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
+      toast({
+        title: "Erro na geração (v2.4)",
+        description: err.message || "O serviço de IA pode estar instável. Tente novamente.",
         variant: "destructive",
       });
-    } finally {
-      // O loading só deve ser removido no onLoad/onError da imagem
     }
   };
 
@@ -224,27 +235,7 @@ const AIPhotoGenerator = () => {
                 <img
                   src={generatedImage}
                   alt="Foto gerada por IA"
-                  onLoad={() => {
-                    setIsLoading(false);
-                    if (watchdogRef.current) clearTimeout(watchdogRef.current);
-                  }}
-                  onError={() => {
-                    setIsLoading(false);
-                    if (watchdogRef.current) clearTimeout(watchdogRef.current);
-                    toast({
-                      title: "Erro ao carregar (v2.3)",
-                      description: (
-                        <div className="space-y-1">
-                          <p>Não foi possível carregar a imagem. O servidor de IA pode estar instável ou o prompt é muito complexo.</p>
-                          <a href={generatedImage || "#"} target="_blank" rel="noreferrer" className="text-xs underline font-bold">
-                            Tentar abrir em nova aba
-                          </a>
-                        </div>
-                      ),
-                      variant: "destructive"
-                    });
-                  }}
-                  className={`block w-full h-auto max-h-[500px] object-contain transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                  className="block w-full h-auto max-h-[500px] object-contain transition-opacity duration-300 opacity-100"
                 />
               ) : !isLoading && (
                 <div className="flex flex-col items-center gap-2 p-8 text-muted-foreground">
