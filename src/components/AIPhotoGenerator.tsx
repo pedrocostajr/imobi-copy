@@ -70,6 +70,15 @@ const AIPhotoGenerator = () => {
 
     try {
       const imageUrl = await generateImage(prompt);
+
+      // Pre-carregamento da imagem para manter o loader ativo até estar pronta
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = resolve;
+        img.onerror = () => reject(new Error("Erro ao carregar a imagem gerada."));
+      });
+
       setGeneratedImage(imageUrl);
       toast({ title: "Foto gerada com sucesso!" });
     } catch (err: any) {
