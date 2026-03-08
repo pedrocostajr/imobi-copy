@@ -72,7 +72,7 @@ const AIPhotoGenerator = () => {
       const imageUrl = await generateImage(prompt);
       setGeneratedImage(imageUrl);
       // O estado isLoading será desativado pelo evento onLoad da imagem no JSX
-      toast({ title: "Iniciando geração (v2.1)..." });
+      toast({ title: "Iniciando geração (v2.2)..." });
     } catch (err: any) {
       console.error(err);
       toast({
@@ -187,12 +187,20 @@ const AIPhotoGenerator = () => {
                 <img
                   src={generatedImage}
                   alt="Foto gerada por IA"
+                  crossOrigin="anonymous"
                   onLoad={() => setIsLoading(false)}
                   onError={() => {
                     setIsLoading(false);
                     toast({
-                      title: "Erro ao carregar imagem",
-                      description: "Não foi possível carregar a imagem gerada. Tente novamente.",
+                      title: "Erro ao carregar (v2.2)",
+                      description: (
+                        <div className="space-y-1">
+                          <p>Não foi possível carregar a imagem. O servidor de IA pode estar instável.</p>
+                          <a href={generatedImage || "#"} target="_blank" rel="noreferrer" className="text-xs underline font-bold">
+                            Tentar abrir em nova aba
+                          </a>
+                        </div>
+                      ),
                       variant: "destructive"
                     });
                   }}
