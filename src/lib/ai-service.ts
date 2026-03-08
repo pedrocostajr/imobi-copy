@@ -137,10 +137,10 @@ export async function generateImage(prompt: string): Promise<string> {
     // Generates a random seed to keep images unique
     const seed = Math.floor(Math.random() * 1000000);
 
-    // Use 512x512 for maximum speed and reliability today
-    const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=512&height=512&seed=${seed}&nologo=true`;
+    // Using pollination.ai/p/ format which is sometimes more consistent for direct browser loading.
+    const imageUrl = `https://pollinations.ai/p/${enhancedPrompt}?width=512&height=512&seed=${seed}&nologo=true&model=turbo`;
 
-    console.log("🎨 Gerando URL da imagem via Pollinations.ai (512px):", imageUrl);
+    console.log("🎨 Gerando URL da imagem via Pollinations.ai (512px, v2.1):", imageUrl);
 
     return imageUrl;
 }

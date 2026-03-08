@@ -72,7 +72,7 @@ const AIPhotoGenerator = () => {
       const imageUrl = await generateImage(prompt);
       setGeneratedImage(imageUrl);
       // O estado isLoading será desativado pelo evento onLoad da imagem no JSX
-      toast({ title: "Iniciando geração da foto..." });
+      toast({ title: "Iniciando geração (v2.1)..." });
     } catch (err: any) {
       console.error(err);
       toast({
@@ -81,7 +81,7 @@ const AIPhotoGenerator = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      // O loading só deve ser removido no onLoad/onError da imagem
     }
   };
 
