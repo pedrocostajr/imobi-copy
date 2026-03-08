@@ -101,6 +101,16 @@ const AIPhotoGenerator = () => {
           <Camera className="h-[18px] w-[18px] text-primary" />
           Estúdio de Fotos IA
         </h2>
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-6 flex items-center gap-3">
+          <div className="bg-amber-500/20 p-1.5 rounded-md">
+            <Sparkles className="h-4 w-4 text-amber-500" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-amber-500">Recurso em Atualização</p>
+            <p className="text-xs text-amber-500/80">Estamos aprimorando a geração de imagens para maior velocidade e estabilidade. O serviço pode apresentar instabilidade temporária.</p>
+          </div>
+        </div>
+
         <p className="text-sm text-muted-foreground mb-6">
           Descreva o imóvel e nossa IA gera fotos ultra-realistas prontas para seus anúncios.
         </p>
