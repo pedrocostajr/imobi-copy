@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Download, Upload, Image as ImageIcon, Sparkles, Palette } from "lucide-react";
+import { Download, Upload, Image as ImageIcon, Sparkles, Palette, Loader2 } from "lucide-react";
+import { generateImage } from "@/lib/ai-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,10 +79,41 @@ const CreativeGenerator = () => {
     brand: "",
   });
 
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const format = FORMATS[formatIdx];
 
   const update = (key: keyof CreativeData, value: string) =>
     setData((prev) => ({ ...prev, [key]: value }));
+
+  const handleAiGenerate = async () => {
+    if (!data.headline && !data.subtext) {
+      toast({ title: "Preencha a Headline ou Subtexto para guiar a IA", variant: "destructive" });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
+      const imageUrl = await generateImage(prompt);
+
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        setImage(img);
+        setIsGenerating(false);
+        toast({ title: "Imagem gerada com IA!" });
+      };
+      img.onerror = () => {
+        setIsGenerating(false);
+        toast({ title: "Erro ao carregar imagem da IA", variant: "destructive" });
+      };
+      img.src = imageUrl;
+    } catch (err) {
+      setIsGenerating(false);
+      toast({ title: "Erro na geração", variant: "destructive" });
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -208,12 +240,28 @@ const CreativeGenerator = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm text-foreground mb-1.5 block">Foto do imóvel</Label>
-                <input type="file" ref={fileInputRef} accept="image/*" onChange={handleFileUpload} className="hidden" />
-                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="w-full gap-2">
-                  <Upload className="h-4 w-4" />
-                  {image ? "Trocar foto" : "Upload foto"}
-                </Button>
+                <Label className="text-sm text-foreground mb-1.5 block">IA ou Própria</Label>
+                <div className="flex gap-2">
+                  <input type="file" ref={fileInputRef} accept="image/*" onChange={handleFileUpload} className="hidden" />
+                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="flex-1 gap-2">
+                    <Upload className="h-4 w-4" />
+                    Upload
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAiGenerate}
+                    disabled={isGenerating}
+                    className="flex-1 gap-2 border-primary/30 hover:border-primary/60 hover:bg-primary/5"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 text-primary" />
+                    )}
+                    IA
+                  </Button>
+                </div>
               </div>
               <div>
                 <Label className="text-sm text-foreground mb-1.5 block">Logomarca</Label>
@@ -268,18 +316,17 @@ const CreativeGenerator = () => {
                 <Palette className="h-3.5 w-3.5 text-primary" />
                 Personalização de Cores
               </Label>
-              
+
               <div className="flex flex-wrap gap-2">
                 {COLOR_PRESETS.map((preset) => (
                   <button
                     key={preset.name}
                     type="button"
                     onClick={() => setColors({ primary: preset.primary, accent: preset.accent })}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition-all ${
-                      colors.primary === preset.primary
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border transition-all ${colors.primary === preset.primary
                         ? "border-primary bg-primary/10 text-foreground"
                         : "border-border text-muted-foreground hover:border-primary/50"
-                    }`}
+                      }`}
                   >
                     <span className="w-3 h-3 rounded-full border border-border/50" style={{ backgroundColor: preset.primary }} />
                     {preset.name}
