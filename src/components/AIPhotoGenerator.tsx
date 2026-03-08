@@ -70,23 +70,9 @@ const AIPhotoGenerator = () => {
 
     try {
       const imageUrl = await generateImage(prompt);
-
-      // Pre-carregamento da imagem para manter o loader ativo até estar pronta
-      // Adicionado timeout de 20s para evitar travamento infinito
-      await Promise.race([
-        new Promise((resolve, reject) => {
-          const img = new Image();
-          img.src = imageUrl;
-          img.onload = resolve;
-          img.onerror = () => reject(new Error("Erro ao carregar a imagem gerada."));
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Tempo limite excedido. O servidor de imagens pode estar lento, tente novamente.")), 50000)
-        )
-      ]);
-
       setGeneratedImage(imageUrl);
-      toast({ title: "Foto gerada com sucesso!" });
+      // O estado isLoading será desativado pelo evento onLoad da imagem no JSX
+      toast({ title: "Iniciando geração da foto..." });
     } catch (err: any) {
       console.error(err);
       toast({
@@ -188,20 +174,31 @@ const AIPhotoGenerator = () => {
             <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
               <Sparkles className="h-3 w-3" /> Resultado
             </p>
-            <div className="border border-border rounded-lg overflow-hidden shadow-xl bg-muted/30 flex items-center justify-center w-full min-h-[300px] max-h-[520px]">
-              {isLoading ? (
-                <div className="flex flex-col items-center gap-3 p-8 text-muted-foreground">
+            <div className="border border-border rounded-lg overflow-hidden shadow-xl bg-muted/30 flex items-center justify-center w-full min-h-[300px] max-h-[520px] relative">
+              {isLoading && (
+                <div className="absolute inset-0 z-10 bg-muted/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 p-8 text-muted-foreground">
                   <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                  <p className="text-sm font-medium">Gerando sua foto ultra-realista...</p>
+                  <p className="text-sm font-medium">Gerando sua foto...</p>
                   <p className="text-xs">Isso pode levar alguns segundos</p>
                 </div>
-              ) : generatedImage ? (
+              )}
+
+              {generatedImage ? (
                 <img
                   src={generatedImage}
                   alt="Foto gerada por IA"
-                  className="block w-full h-auto max-h-[500px] object-contain"
+                  onLoad={() => setIsLoading(false)}
+                  onError={() => {
+                    setIsLoading(false);
+                    toast({
+                      title: "Erro ao carregar imagem",
+                      description: "Não foi possível carregar a imagem gerada. Tente novamente.",
+                      variant: "destructive"
+                    });
+                  }}
+                  className={`block w-full h-auto max-h-[500px] object-contain transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
                 />
-              ) : (
+              ) : !isLoading && (
                 <div className="flex flex-col items-center gap-2 p-8 text-muted-foreground">
                   <Camera className="h-10 w-10 opacity-30" />
                   <p className="text-sm">Sua foto aparecerá aqui</p>
