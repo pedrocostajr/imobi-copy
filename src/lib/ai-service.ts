@@ -130,16 +130,17 @@ ${data.modoAvancado ? `6. VARIAÇÕES DE HEADLINE:
 export async function generateImage(prompt: string): Promise<string> {
     // Pollinations.ai is much more reliable for client-side usage.
     // We add quality keywords to ensure a professional real-estate look.
-    const enhancedPrompt = encodeURIComponent(
-        `${prompt}, professional real estate photography, high resolution, 4k, architectural lighting, sharp focus, editorial style`
-    );
+    // Using 'flux' model for superior architectural and interior quality.
+    const qualityKeywords = "professional real estate photography, high resolution, 4k, architectural lighting, sharp focus, editorial style, masterpiece, highly detailed";
+    const enhancedPrompt = encodeURIComponent(`${prompt}, ${qualityKeywords}`);
 
     // Generates a random seed to keep images unique
     const seed = Math.floor(Math.random() * 1000000);
-    // Use the official image subdomain
+
+    // Use the official image subdomain with flux model which is excellent for realism
     const imageUrl = `https://image.pollinations.ai/prompt/${enhancedPrompt}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
 
-    console.log("🎨 Gerando URL da imagem via Pollinations.ai:", imageUrl);
+    console.log("🎨 Gerando URL da imagem via Pollinations.ai (Flux):", imageUrl);
 
     return imageUrl;
 }
