@@ -72,12 +72,18 @@ const AIPhotoGenerator = () => {
       const imageUrl = await generateImage(prompt);
 
       // Pre-carregamento da imagem para manter o loader ativo até estar pronta
-      await new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = imageUrl;
-        img.onload = resolve;
-        img.onerror = () => reject(new Error("Erro ao carregar a imagem gerada."));
-      });
+      // Adicionado timeout de 20s para evitar travamento infinito
+      await Promise.race([
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = imageUrl;
+          img.onload = resolve;
+          img.onerror = () => reject(new Error("Erro ao carregar a imagem gerada."));
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Tempo limite excedido ao carregar a imagem. Tente novamente.")), 20000)
+        )
+      ]);
 
       setGeneratedImage(imageUrl);
       toast({ title: "Foto gerada com sucesso!" });
