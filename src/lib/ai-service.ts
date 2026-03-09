@@ -73,7 +73,7 @@ export async function generateImage(prompt: string): Promise<string> {
                 const isHtmlOrScript = text.includes("<!DOCTYPE") || text.includes("<script") || text.includes("<html") || text.includes("self.__next_f");
 
                 if (isHtmlOrScript) {
-                    errorMsg = "Erro de Roteamento ou Servidor (404/500). Verifique o deploy no Vercel.";
+                    errorMsg = "Erro de Roteamento ou Timeout (504). A Vercel Hobby limita em 10s. Tente novamente.";
                 } else {
                     try {
                         const errorData = JSON.parse(text);
@@ -91,8 +91,8 @@ export async function generateImage(prompt: string): Promise<string> {
 
         return data.imageUrl; // Retorna o base64
     } catch (err: any) {
-        console.error("🚨 Erro Crítico v7.5:", err);
-        throw new Error(`Falha Vercel v7.5: ${err.message || 'Erro de conexão'}`);
+        console.error("🚨 Erro Crítico v7.6:", err);
+        throw new Error(`Falha Vercel v7.6: ${err.message || 'Erro de conexão'}`);
     }
 }
 
