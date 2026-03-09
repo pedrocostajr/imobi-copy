@@ -52,7 +52,7 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
  */
 export async function generateImage(prompt: string): Promise<string> {
     try {
-        console.log("🚀 [v7.1] Iniciando Geração via VERCEL SERVERLESS BRIDGE...");
+        console.log("🚀 [v7.4] Iniciando Geração via VERCEL SERVERLESS BRIDGE...");
 
         // Em produção Vercel, a rota é relativa ao domínio
         const apiPath = "/api/generate-photo";
@@ -91,8 +91,8 @@ export async function generateImage(prompt: string): Promise<string> {
 
         return data.imageUrl; // Retorna o base64
     } catch (err: any) {
-        console.error("🚨 Erro Crítico v7.2:", err);
-        throw new Error(`Falha Vercel v7.2: ${err.message || 'Erro de conexão'}`);
+        console.error("🚨 Erro Crítico v7.4:", err);
+        throw new Error(`Falha Vercel v7.4: ${err.message || 'Erro de conexão'}`);
     }
 }
 

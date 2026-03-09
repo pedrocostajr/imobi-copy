@@ -76,20 +76,20 @@ const AIPhotoGenerator = () => {
         <div className="flex justify-between items-start mb-4">
           <h2 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
             <Zap className="h-[18px] w-[18px] text-amber-500 fill-amber-500" />
-            Estúdio IA v7.3 (Vercel Bridge)
+            Estúdio IA v7.4 (Vercel Bridge)
           </h2>
           <div className="flex gap-2">
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.3 VERCEL STABLE</span>
+            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.4 VERCEL STABLE</span>
           </div>
         </div>
 
         <div className="mb-4 bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center gap-2 text-amber-800">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <p className="text-[11px] font-medium">
-            <strong>AVISO:</strong> A geração de fotos com IA está passando por uma atualização crítica. Podem ocorrer instabilidades temporárias no carregamento.
+          <p className="text-[11px] font-medium leading-tight">
+            <strong>ESTADO DE ATUALIZAÇÃO v7.4:</strong> Sistema em recalibração. Verifique a conectividade: <a href="/api/ping" target="_blank" className="underline font-bold">Teste de Túnel</a>.
           </p>
         </div>
 

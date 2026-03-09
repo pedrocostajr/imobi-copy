@@ -28,7 +28,7 @@ export default async function handler(
             return response.status(500).json({ error: 'OPENROUTER_API_KEY not configured on Vercel' });
         }
 
-        console.log(`🎨 [v7.0 VERCEL BRIDGE] Gerando imagem: ${prompt}`);
+        console.log(`🎨 [v7.4 VERCEL BRIDGE] Gerando imagem: ${prompt}`);
 
         // Chamada para OpenRouter (DALL-E 3)
         const orResponse = await fetch("https://openrouter.ai/api/v1/images/generations", {
@@ -75,7 +75,7 @@ export default async function handler(
 
         return response.status(200).json({
             imageUrl: `data:image/png;base64,${base64Image}`,
-            version: "v7.0 VERCEL-ELITE"
+            version: "v7.4 VERCEL-ELITE"
         });
 
     } catch (error: any) {
