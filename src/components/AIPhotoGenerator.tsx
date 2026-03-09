@@ -28,7 +28,7 @@ const AIPhotoGenerator = () => {
     setIsProbing(false);
 
     if (google) {
-      toast({ title: "Rede v6.0 OK", description: "Sua rede está pronta para o túnel da OpenRouter." });
+      toast({ title: "Rede v7.3 OK", description: "Sua rede está pronta para o túnel Vercel." });
     } else {
       toast({ title: "Erro de Internet", description: "Verifique seu Wi-Fi/Cabo.", variant: "destructive" });
     }
@@ -52,10 +52,10 @@ const AIPhotoGenerator = () => {
 
       if (loadingRef.current) {
         setGeneratedImage(imageUrl);
-        toast({ title: "Geração v6.0 Concluída!", description: "Imagem processada via OpenRouter Engine." });
+        toast({ title: "Geração v7.3 Concluída!", description: "Imagem processada via Vercel Elite Engine." });
       }
     } catch (err: any) {
-      toast({ title: "Erro v6.0", description: err.message, variant: "destructive" });
+      toast({ title: "Erro de Motor v7.3", description: err.message, variant: "destructive" });
     } finally {
       setIsLoading(false);
       loadingRef.current = false;
@@ -76,13 +76,13 @@ const AIPhotoGenerator = () => {
         <div className="flex justify-between items-start mb-4">
           <h2 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
             <Zap className="h-[18px] w-[18px] text-amber-500 fill-amber-500" />
-            Estúdio IA v7.2 (Vercel Bridge)
+            Estúdio IA v7.3 (Vercel Bridge)
           </h2>
           <div className="flex gap-2">
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.2 VERCEL STABLE</span>
+            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.3 VERCEL STABLE</span>
           </div>
         </div>
 
@@ -135,7 +135,7 @@ const AIPhotoGenerator = () => {
             )}
 
             <p className="text-[10px] text-center text-muted-foreground italic">
-              A v7.0 Vercel Elite utiliza infraestrutura de borda para furar bloqueios corporativos.
+              A v7.3 Vercel Stable utiliza infraestrutura de borda para furar bloqueios corporativos.
             </p>
           </div>
 
@@ -148,7 +148,7 @@ const AIPhotoGenerator = () => {
                     <Zap className="h-8 w-8 absolute top-6 left-6 text-amber-500 animate-bounce" />
                   </div>
                   <div className="text-center space-y-3">
-                    <p className="text-xl font-black text-black tracking-tighter uppercase">Processando Vercel v7.2</p>
+                    <p className="text-xl font-black text-black tracking-tighter uppercase">Processando Vercel v7.3</p>
                     <p className="text-xs text-muted-foreground font-semibold max-w-[280px]">Estamos reconstruindo a imagem via Vercel. Se demorar muito, reinicie a página.</p>
                   </div>
                 </div>
@@ -157,7 +157,7 @@ const AIPhotoGenerator = () => {
               {generatedImage ? (
                 <img
                   src={generatedImage}
-                  alt="Resultado Premium v6.0"
+                  alt="Resultado Premium v7.3"
                   className={`block w-full h-auto max-h-[600px] object-contain transition-all duration-1000 ease-out ${isLoading ? 'opacity-0 scale-90 blur-3xl' : 'opacity-100 scale-100 blur-0'}`}
                 />
               ) : !isLoading && (

@@ -101,16 +101,16 @@ const CreativeGenerator = () => {
     try {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
 
-      // v7.2 VERCEL STABLE BRIDGE
+      // v7.3 VERCEL STABLE BRIDGE
       const imageUrl = await generateImage(prompt);
 
-      // Watchdog de 60 segundos (v7.2)
+      // Watchdog de 60 segundos (v7.3)
       watchdogRef.current = setTimeout(() => {
         if (generatingRef.current) {
           setIsGenerating(false);
           generatingRef.current = false;
           toast({
-            title: "Processamento v7.2",
+            title: "Processamento v7.3",
             description: "A Vercel está finalizando sua imagem. Aguarde um instante.",
             variant: "default"
           });
@@ -123,22 +123,22 @@ const CreativeGenerator = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Imagem Gerada via Vercel! (v7.2)" });
+        toast({ title: "Imagem Gerada via Vercel! (v7.3)" });
       };
       img.onerror = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Erro de Renderização (v7.2)", variant: "destructive" });
+        toast({ title: "Erro de Renderização (v7.3)", variant: "destructive" });
       };
       img.src = imageUrl;
     } catch (err: any) {
-      console.error("🚨 Erro Criativo v7.2:", err);
+      console.error("🚨 Erro Criativo v7.3:", err);
       setIsGenerating(false);
       generatingRef.current = false;
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       toast({
-        title: "Instabilidade v7.2",
+        title: "Instabilidade v7.3",
         description: err.message || "Sistema em atualização. Tente novamente em instantes.",
         variant: "destructive"
       });
