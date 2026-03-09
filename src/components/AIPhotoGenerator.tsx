@@ -76,13 +76,13 @@ const AIPhotoGenerator = () => {
         <div className="flex justify-between items-start mb-4">
           <h2 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
             <Zap className="h-[18px] w-[18px] text-amber-500 fill-amber-500" />
-            Estúdio IA v7.0 (Vercel Elite)
+            Estúdio IA v7.1 (Vercel Bridge)
           </h2>
           <div className="flex gap-2">
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.0 VERCEL ELITE</span>
+            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.1 VERCEL STABLE</span>
           </div>
         </div>
 
@@ -141,8 +141,8 @@ const AIPhotoGenerator = () => {
                     <Zap className="h-8 w-8 absolute top-6 left-6 text-amber-500 animate-bounce" />
                   </div>
                   <div className="text-center space-y-3">
-                    <p className="text-xl font-black text-black tracking-tighter uppercase">Processando Vercel v7</p>
-                    <p className="text-xs text-muted-foreground font-semibold max-w-[280px]">Estamos usando o servidor interno da Vercel para reconstruir a imagem fora da sua rede.</p>
+                    <p className="text-xl font-black text-black tracking-tighter uppercase">Processando Vercel v7.1</p>
+                    <p className="text-xs text-muted-foreground font-semibold max-w-[280px]">Estamos usando o túnel estável da Vercel para reconstruir a imagem sem bloqueios.</p>
                   </div>
                 </div>
               )}

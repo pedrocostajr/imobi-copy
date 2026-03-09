@@ -52,7 +52,7 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
  */
 export async function generateImage(prompt: string): Promise<string> {
     try {
-        console.log("🚀 [v7.0] Iniciando Geração via VERCEL SERVERLESS BRIDGE...");
+        console.log("🚀 [v7.1] Iniciando Geração via VERCEL SERVERLESS BRIDGE...");
 
         // Em produção Vercel, a rota é relativa ao domínio
         const apiPath = "/api/generate-photo";
@@ -66,17 +66,26 @@ export async function generateImage(prompt: string): Promise<string> {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(`Erro Vercel (${response.status}): ${errorData.error || 'Falha no Servidor'}`);
+            let errorMsg = `Erro ${response.status}`;
+            try {
+                const text = await response.text();
+                try {
+                    const errorData = JSON.parse(text);
+                    errorMsg = errorData.error || errorMsg;
+                } catch (e) {
+                    errorMsg = text.includes("<!DOCTYPE") ? "Erro de Roteamento (404). Verifique redist no Vercel." : text.substring(0, 100);
+                }
+            } catch (e) { }
+            throw new Error(errorMsg);
         }
 
         const data = await response.json();
-        if (!data || !data.imageUrl) throw new Error("A Vercel não retornou a imagem processada.");
+        if (!data || !data.imageUrl) throw new Error("A Vercel não retornou os dados da imagem.");
 
         return data.imageUrl; // Retorna o base64
     } catch (err: any) {
-        console.error("🚨 Erro Crítico v7.0:", err);
-        throw new Error(`Falha Vercel v7.0: ${err.message || 'Erro de conexão'}`);
+        console.error("🚨 Erro Crítico v7.1:", err);
+        throw new Error(`Falha Vercel v7.1: ${err.message || 'Erro de conexão'}`);
     }
 }
 
