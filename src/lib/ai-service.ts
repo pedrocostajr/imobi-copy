@@ -47,43 +47,36 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 }
 
 /**
- * v5.0 - Pure Server Bridge Strategy
- * Absolute bypass of local network blocks by fetching image bits on the server.
+ * v7.0 - Vercel Serverless Bridge Strategy
+ * Absolute bypass of local network blocks by fetching image bits on Vercel's server.
  */
 export async function generateImage(prompt: string): Promise<string> {
     try {
-        console.log("🚀 [v6.0] Iniciando Geração via OPENROUTER BRIDGE...");
+        console.log("🚀 [v7.0] Iniciando Geração via VERCEL SERVERLESS BRIDGE...");
 
-        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-        const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        // Em produção Vercel, a rota é relativa ao domínio
+        const apiPath = "/api/generate-photo";
 
-        if (!SUPABASE_URL || !ANON_KEY) {
-            throw new Error("Configuração do servidor incompleta (.env)");
-        }
-
-        const functionUrl = `${SUPABASE_URL}/functions/v1/generate-photo`;
-
-        const response = await fetch(functionUrl, {
+        const response = await fetch(apiPath, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${ANON_KEY}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ prompt })
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro no Servidor (${response.status}): ${errorText.substring(0, 50)}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`Erro Vercel (${response.status}): ${errorData.error || 'Falha no Servidor'}`);
         }
 
         const data = await response.json();
-        if (!data || !data.imageUrl) throw new Error("O servidor não retornou a imagem.");
+        if (!data || !data.imageUrl) throw new Error("A Vercel não retornou a imagem processada.");
 
-        return data.imageUrl;
+        return data.imageUrl; // Retorna o base64
     } catch (err: any) {
-        console.error("🚨 Erro Crítico v6.0:", err);
-        throw new Error(`Falha OpenRouter v6.0: ${err.message || 'Erro desconhecido'}`);
+        console.error("🚨 Erro Crítico v7.0:", err);
+        throw new Error(`Falha Vercel v7.0: ${err.message || 'Erro de conexão'}`);
     }
 }
 

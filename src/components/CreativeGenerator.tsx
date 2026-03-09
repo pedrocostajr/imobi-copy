@@ -101,17 +101,17 @@ const CreativeGenerator = () => {
     try {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
 
-      // v6.0 OPENROUTER ENGINE
+      // v7.0 VERCEL ELITE BRIDGE
       const imageUrl = await generateImage(prompt);
 
-      // Watchdog de 60 segundos (v6.0)
+      // Watchdog de 60 segundos (v7.0)
       watchdogRef.current = setTimeout(() => {
         if (generatingRef.current) {
           setIsGenerating(false);
           generatingRef.current = false;
           toast({
-            title: "Processamento v6.0",
-            description: "A IA está finalizando sua imagem via OpenRouter.",
+            title: "Processamento v7.0",
+            description: "A Vercel está finalizando sua imagem via OpenRouter.",
             variant: "default"
           });
         }
@@ -123,22 +123,22 @@ const CreativeGenerator = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Imagem Gerada via OpenRouter! (v6.0)" });
+        toast({ title: "Imagem Gerada via Vercel! (v7.0)" });
       };
       img.onerror = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Erro de Renderização (v6.0)", variant: "destructive" });
+        toast({ title: "Erro de Renderização (v7.0)", variant: "destructive" });
       };
       img.src = imageUrl;
     } catch (err: any) {
-      console.error("🚨 Erro Criativo v6.0:", err);
+      console.error("🚨 Erro Criativo v7.0:", err);
       setIsGenerating(false);
       generatingRef.current = false;
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       toast({
-        title: "Falha OpenRouter v6.0",
+        title: "Falha Vercel v7.0",
         description: err.message || "Sua rede bloqueou o acesso.",
         variant: "destructive"
       });
