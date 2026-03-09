@@ -64,7 +64,7 @@ const AIPhotoGenerator = () => {
     const google = await probeConnectivity("https://www.google.com/favicon.ico");
     setProbeResults(prev => ({ ...prev, google }));
 
-    const unsplash = await probeConnectivity("https://images.unsplash.com/photo-1582408907739-556157835154?auto=format&fit=crop&w=32&h=32&q=10");
+    const unsplash = await probeConnectivity("https://loremflickr.com/favicon.ico");
     setProbeResults(prev => ({ ...prev, unsplash }));
 
     const pollinations = await probeConnectivity("https://image.pollinations.ai/prompt/test?width=32&height=32");
@@ -162,7 +162,7 @@ const AIPhotoGenerator = () => {
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-1 rounded font-mono">v2.8 recovery</span>
+            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-1 rounded font-mono">v3.0 stable</span>
           </div>
         </div>
 
@@ -187,13 +187,13 @@ const AIPhotoGenerator = () => {
               </div>
             </div>
             <div className={`p-2 rounded border transition-colors ${probeResults.unsplash === true ? 'bg-green-50 border-green-200' : probeResults.unsplash === false ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}>
-              <p className="text-[10px] font-bold text-slate-500 uppercase">Unsplash</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Banco Imagem</p>
               <div className="flex justify-center mt-1">
                 {probeResults.unsplash === true ? <Wifi className="h-4 w-4 text-green-500" /> : <WifiOff className="h-4 w-4 text-slate-300" />}
               </div>
             </div>
             <div className={`p-2 rounded border transition-colors ${probeResults.pollinations === true ? 'bg-green-50 border-green-200' : probeResults.pollinations === false ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}>
-              <p className="text-[10px] font-bold text-slate-500 uppercase">IA Pollination</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Servidor IA</p>
               <div className="flex justify-center mt-1">
                 {probeResults.pollinations === true ? <Wifi className="h-4 w-4 text-green-500" /> : <WifiOff className="h-4 w-4 text-slate-300" />}
               </div>

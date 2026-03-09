@@ -46,42 +46,35 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 }
 
 /**
- * v2.8 - Multi-provider and Fallback Strategy
- * If Pollinations is blocked, we can offer Unsplash fallback or proxy.
+ * v3.0 - Maximum Reliability Strategy
  */
 export async function generateImage(prompt: string, provider: "ai" | "stock" = "ai"): Promise<string> {
-    const cleanPrompt = prompt.trim().substring(0, 200).replace(/[?#&]/g, '');
+    const cleanPrompt = prompt.trim().substring(0, 150).replace(/[?#&]/g, '');
     const seed = Math.floor(Math.random() * 1000000);
 
     if (provider === "stock") {
-        // Fallback Unsplash for real estate photos that usually pass office filters
-        const keywords = encodeURIComponent(`${cleanPrompt}, real estate, interior, luxury`);
-        return `https://source.unsplash.com/featured/1080x1080?${keywords}&sig=${seed}`;
+        // v3.0: LoremFlickr is much more stable than Unsplash source in restricted networks
+        const searchTags = "realestate,interior,house";
+        return `https://loremflickr.com/1080/1080/${searchTags}?lock=${seed}`;
     }
 
-    // Try multiple subdomains/paths for Pollinations (v2.8 Resilience)
-    const quality = "professional real estate photo, 4k, architectural";
+    // Try high-stability AI path
+    const quality = "real estate photography, architectural, 4k";
     const encoded = encodeURIComponent(`${cleanPrompt}, ${quality}`);
 
-    // We rotate between subdomains in the UI if one fails, but here we return a prioritized one
-    return `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&seed=${seed}&nologo=true&model=turbo`;
+    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&model=turbo`;
 }
 
-/**
- * Probes connectivity to various endpoints to diagnose network blocks.
- */
 export async function probeConnectivity(url: string): Promise<boolean> {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        await fetch(url, {
-            method: "HEAD",
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const response = await fetch(url, {
+            method: "GET",
             mode: "no-cors",
             signal: controller.signal,
             cache: 'no-store'
         });
-
         clearTimeout(timeoutId);
         return true;
     } catch (e) {
