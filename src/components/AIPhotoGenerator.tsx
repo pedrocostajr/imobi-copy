@@ -283,9 +283,10 @@ const AIPhotoGenerator = () => {
                   onLoad={() => stopLoading()}
                   onError={() => {
                     stopLoading();
+                    setIsStockMode(true);
                     toast({
-                      title: "Filtro de Rede Detectado",
-                      description: "Seu navegador barrou o carregamento. Use o link de emergência.",
+                      title: "Rede Bloqueada Detectada",
+                      description: "Sua internet bloqueou a IA. Ativamos automaticamente o 'Modo Banco de Imagens' para você conseguir fotos reais.",
                       variant: "destructive"
                     });
                   }}
