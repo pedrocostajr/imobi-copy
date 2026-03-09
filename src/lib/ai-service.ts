@@ -52,19 +52,38 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
  */
 export async function generateImage(prompt: string): Promise<string> {
     try {
-        console.log("🚀 [v5.0] Iniciando Geração via PURE BRIDGE (Server-Side)...");
+        console.log("🚀 [v5.1] Iniciando Geração via DIRECT FETCH BRIDGE...");
 
-        const { data, error } = await supabase.functions.invoke("generate-photo", {
-            body: { prompt }
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+        if (!SUPABASE_URL || !ANON_KEY) {
+            throw new Error("Configuração do servidor incompleta (.env)");
+        }
+
+        const functionUrl = `${SUPABASE_URL}/functions/v1/generate-photo`;
+
+        const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${ANON_KEY}`
+            },
+            body: JSON.stringify({ prompt })
         });
 
-        if (error) throw error;
-        if (!data || !data.imageUrl) throw new Error("O servidor de IA falhou ao processar os dados.");
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Erro no Servidor (${response.status}): ${errorText.substring(0, 50)}`);
+        }
 
-        return data.imageUrl; // Retorna o base64 (data:image/png;base64,...)
+        const data = await response.json();
+        if (!data || !data.imageUrl) throw new Error("O servidor não retornou a imagem.");
+
+        return data.imageUrl;
     } catch (err: any) {
-        console.error("🚨 Erro Crítico na Ponte v5.0:", err);
-        throw new Error("Não foi possível gerar a foto devido a restrições de rede. Tente novamente ou use outra conexão.");
+        console.error("🚨 Erro Crítico v5.1:", err);
+        throw new Error(`Falha de Conexão v5.1: ${err.message || 'Erro desconhecido'}`);
     }
 }
 

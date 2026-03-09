@@ -101,17 +101,17 @@ const CreativeGenerator = () => {
     try {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
 
-      // v5.0 PURE BRIDGE (Binary data via Supabase)
+      // v5.1 DIRECT FETCH BRIDGE
       const imageUrl = await generateImage(prompt);
 
-      // Watchdog de 60 segundos (v5.0)
+      // Watchdog de 60 segundos (v5.1)
       watchdogRef.current = setTimeout(() => {
         if (generatingRef.current) {
           setIsGenerating(false);
           generatingRef.current = false;
           toast({
-            title: "Ufa! Servidor Ocupado (v5.0)",
-            description: "A IA está processando sua imagem. Verifique em instantes.",
+            title: "Timeout v5.1",
+            description: "A conexão direta está demorando. Tente novamente.",
             variant: "destructive"
           });
         }
@@ -123,23 +123,23 @@ const CreativeGenerator = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Imagem Gerada via Pure Bridge! (v5.0)" });
+        toast({ title: "Imagem Gerada (v5.1 Direct)!" });
       };
       img.onerror = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Erro de Processamento Bridge (v5.0)", variant: "destructive" });
+        toast({ title: "Erro de Renderização (v5.1)", variant: "destructive" });
       };
       img.src = imageUrl;
     } catch (err: any) {
-      console.error("🚨 Erro Criativo v5.0:", err);
+      console.error("🚨 Erro Criativo v5.1:", err);
       setIsGenerating(false);
       generatingRef.current = false;
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       toast({
-        title: "Falha na Geração (v5.0)",
-        description: err.message || "Tente novamente.",
+        title: "Falha de Conexão v5.1",
+        description: err.message || "Sua rede bloqueou o acesso.",
         variant: "destructive"
       });
     }

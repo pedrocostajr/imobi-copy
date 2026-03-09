@@ -107,13 +107,13 @@ const AIPhotoGenerator = () => {
         <div className="flex justify-between items-start mb-4">
           <h2 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
             <Camera className="h-[18px] w-[18px] text-indigo-600" />
-            Estúdio IA v5.0 (Pure Bridge)
+            Estúdio IA v5.1 (Direct Bridge)
           </h2>
           <div className="flex gap-2">
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-indigo-600 text-white px-1.5 py-1 rounded font-mono shadow-md animate-pulse">v5.0 PURE BRIDGE</span>
+            <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-1 rounded font-mono shadow-md animate-pulse">v5.1 DIRECT FETCH</span>
           </div>
         </div>
 
@@ -122,12 +122,12 @@ const AIPhotoGenerator = () => {
             <ShieldCheck className="h-4 w-4 text-indigo-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold text-indigo-700 uppercase tracking-tighter">Conexão Blindada Ativa</p>
-            <p className="text-xs text-indigo-600/80 italic">O servidor está baixando a foto. Sua rede local não verá o tráfego da IA.</p>
+            <p className="text-sm font-bold text-emerald-700 uppercase tracking-tighter">Bypass de Rede v5.1 Ativo</p>
+            <p className="text-xs text-emerald-600/80 italic">Usando conexão direta via porta 443 para furar bloqueios de firewall.</p>
           </div>
-          <Button variant="outline" size="sm" onClick={runDiagnostic} disabled={isProbing} className="h-8 text-xs gap-1.5 border-indigo-200 text-indigo-600 hover:bg-indigo-50">
+          <Button variant="outline" size="sm" onClick={runDiagnostic} disabled={isProbing} className="h-8 text-xs gap-1.5 border-emerald-200 text-emerald-600 hover:bg-emerald-50">
             {isProbing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wifi className="h-3 w-3" />}
-            Testar Bridge v5
+            Testar Rede v5.1
           </Button>
         </div>
 
