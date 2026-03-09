@@ -47,57 +47,39 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 }
 
 /**
- * v7.0 - Vercel Serverless Bridge Strategy
- * Absolute bypass of local network blocks by fetching image bits on Vercel's server.
+ * v7.8 - Smart Failover Watchdog Strategy
+ * Antecipates Vercel 10s timeout by bailing at 8s and uses TURBO fallback.
  */
 export async function generateImage(prompt: string): Promise<string> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // Watchdog 8s
+
     try {
-        console.log("🚀 [v7.4] Iniciando Geração via VERCEL SERVERLESS BRIDGE...");
+        console.log("🚀 [v7.8] Iniciando Geração (Tunnel + Smart Watchdog)...");
 
-        // Em produção Vercel, a rota é relativa ao domínio
-        const apiPath = "/api/generate-photo";
-
-        const response = await fetch(apiPath, {
+        const response = await fetch("/api/generate-photo", {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prompt })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt }),
+            signal: controller.signal
         });
 
-        if (!response.ok) {
-            let errorMsg = `Erro ${response.status}`;
-            try {
-                const text = await response.text();
-                // Filtro para não exibir HTML ou Scripts no toast (v7.2)
-                const isHtmlOrScript = text.includes("<!DOCTYPE") || text.includes("<script") || text.includes("<html") || text.includes("self.__next_f");
+        clearTimeout(timeoutId);
 
-                if (isHtmlOrScript) {
-                    errorMsg = "Erro de Roteamento ou Timeout (504). A Vercel Hobby limita em 10s. Tente novamente.";
-                } else {
-                    try {
-                        const errorData = JSON.parse(text);
-                        errorMsg = errorData.error || errorMsg;
-                    } catch (e) {
-                        errorMsg = text.substring(0, 80);
-                    }
-                }
-            } catch (e) { }
-            throw new Error(errorMsg);
-        }
+        if (!response.ok) throw new Error(`Status ${response.status}`);
 
         const data = await response.json();
-        if (!data || !data.imageUrl) throw new Error("A Vercel não retornou os dados da imagem.");
+        if (!data || !data.imageUrl) throw new Error("Sem dados");
 
+        return data.imageUrl; // Retorna o base64 se o servidor responder rápido
     } catch (err: any) {
-        console.warn("⚠️ Vercel Bridge lenta ou fora do ar. Usando Fallback de Emergência (v7.7)...");
+        clearTimeout(timeoutId);
+        console.warn("⚠️ Failover v7.8 Ativado: Usando Túnel Ultra-Resiliente (Turbo).");
 
-        // Fallback Direto (Pollinations.ai) - Ignora a Vercel se ela demorar mais de 10s
+        // Fallback Pollinations TURBO (Mais livre de filas e rápido)
         const seed = Math.floor(Math.random() * 1000000);
-        const encodedPrompt = encodeURIComponent(`high quality real estate photography, ${prompt}, 8k, architectural`);
-        const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=1024&height=1024&model=flux&nologo=true`;
-
-        return fallbackUrl;
+        const encodedPrompt = encodeURIComponent(`high quality real estate photo, ${prompt}, photography, 8k`);
+        return `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=1024&height=1024&model=turbo&nologo=true`;
     }
 }
 
