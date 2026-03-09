@@ -101,16 +101,16 @@ const CreativeGenerator = () => {
     try {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
 
-      // v7.1 VERCEL STABLE BRIDGE
+      // v7.2 VERCEL STABLE BRIDGE
       const imageUrl = await generateImage(prompt);
 
-      // Watchdog de 60 segundos (v7.0)
+      // Watchdog de 60 segundos (v7.2)
       watchdogRef.current = setTimeout(() => {
         if (generatingRef.current) {
           setIsGenerating(false);
           generatingRef.current = false;
           toast({
-            title: "Processamento v7.1",
+            title: "Processamento v7.2",
             description: "A Vercel está finalizando sua imagem. Aguarde um instante.",
             variant: "default"
           });
@@ -123,23 +123,23 @@ const CreativeGenerator = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Imagem Gerada via Vercel! (v7.1)" });
+        toast({ title: "Imagem Gerada via Vercel! (v7.2)" });
       };
       img.onerror = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Erro de Renderização (v7.1)", variant: "destructive" });
+        toast({ title: "Erro de Renderização (v7.2)", variant: "destructive" });
       };
       img.src = imageUrl;
     } catch (err: any) {
-      console.error("🚨 Erro Criativo v7.1:", err);
+      console.error("🚨 Erro Criativo v7.2:", err);
       setIsGenerating(false);
       generatingRef.current = false;
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       toast({
-        title: "Falha Vercel v7.1",
-        description: err.message || "Sua rede bloqueou o acesso.",
+        title: "Instabilidade v7.2",
+        description: err.message || "Sistema em atualização. Tente novamente em instantes.",
         variant: "destructive"
       });
     }

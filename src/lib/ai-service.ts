@@ -69,11 +69,18 @@ export async function generateImage(prompt: string): Promise<string> {
             let errorMsg = `Erro ${response.status}`;
             try {
                 const text = await response.text();
-                try {
-                    const errorData = JSON.parse(text);
-                    errorMsg = errorData.error || errorMsg;
-                } catch (e) {
-                    errorMsg = text.includes("<!DOCTYPE") ? "Erro de Roteamento (404). Verifique redist no Vercel." : text.substring(0, 100);
+                // Filtro para não exibir HTML ou Scripts no toast (v7.2)
+                const isHtmlOrScript = text.includes("<!DOCTYPE") || text.includes("<script") || text.includes("<html") || text.includes("self.__next_f");
+
+                if (isHtmlOrScript) {
+                    errorMsg = "Erro de Roteamento ou Servidor (404/500). Verifique o deploy no Vercel.";
+                } else {
+                    try {
+                        const errorData = JSON.parse(text);
+                        errorMsg = errorData.error || errorMsg;
+                    } catch (e) {
+                        errorMsg = text.substring(0, 80);
+                    }
                 }
             } catch (e) { }
             throw new Error(errorMsg);
@@ -84,8 +91,8 @@ export async function generateImage(prompt: string): Promise<string> {
 
         return data.imageUrl; // Retorna o base64
     } catch (err: any) {
-        console.error("🚨 Erro Crítico v7.1:", err);
-        throw new Error(`Falha Vercel v7.1: ${err.message || 'Erro de conexão'}`);
+        console.error("🚨 Erro Crítico v7.2:", err);
+        throw new Error(`Falha Vercel v7.2: ${err.message || 'Erro de conexão'}`);
     }
 }
 

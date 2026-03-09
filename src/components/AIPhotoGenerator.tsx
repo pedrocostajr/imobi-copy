@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Camera, Download, Sparkles, Loader2, RefreshCw, Wifi, ShieldCheck, Zap, Globe } from "lucide-react";
+import { Camera, Download, Sparkles, Loader2, RefreshCw, Wifi, ShieldCheck, Zap, Globe, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -76,14 +76,21 @@ const AIPhotoGenerator = () => {
         <div className="flex justify-between items-start mb-4">
           <h2 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
             <Zap className="h-[18px] w-[18px] text-amber-500 fill-amber-500" />
-            Estúdio IA v7.1 (Vercel Bridge)
+            Estúdio IA v7.2 (Vercel Bridge)
           </h2>
           <div className="flex gap-2">
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.1 VERCEL STABLE</span>
+            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.2 VERCEL STABLE</span>
           </div>
+        </div>
+
+        <div className="mb-4 bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center gap-2 text-amber-800">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <p className="text-[11px] font-medium">
+            <strong>AVISO:</strong> A geração de fotos com IA está passando por uma atualização crítica. Podem ocorrer instabilidades temporárias no carregamento.
+          </p>
         </div>
 
         <div className="bg-emerald-600/5 border border-emerald-600/20 rounded-lg p-3 mb-6 flex items-center gap-3">
@@ -141,8 +148,8 @@ const AIPhotoGenerator = () => {
                     <Zap className="h-8 w-8 absolute top-6 left-6 text-amber-500 animate-bounce" />
                   </div>
                   <div className="text-center space-y-3">
-                    <p className="text-xl font-black text-black tracking-tighter uppercase">Processando Vercel v7.1</p>
-                    <p className="text-xs text-muted-foreground font-semibold max-w-[280px]">Estamos usando o túnel estável da Vercel para reconstruir a imagem sem bloqueios.</p>
+                    <p className="text-xl font-black text-black tracking-tighter uppercase">Processando Vercel v7.2</p>
+                    <p className="text-xs text-muted-foreground font-semibold max-w-[280px]">Estamos reconstruindo a imagem via Vercel. Se demorar muito, reinicie a página.</p>
                   </div>
                 </div>
               )}
