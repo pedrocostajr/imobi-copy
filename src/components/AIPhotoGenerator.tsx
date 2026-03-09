@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Camera, Download, Sparkles, Loader2, ExternalLink, Copy, RefreshCw, Wifi, WifiOff, ShieldCheck, Image as ImageIcon } from "lucide-react";
+import { Camera, Download, Sparkles, Loader2, ExternalLink, Copy, RefreshCw, Wifi, WifiOff, ShieldCheck, Image as ImageIcon, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -24,10 +24,6 @@ const PRESETS = [
     prompt:
       "Ultra-realistic professional exterior photography of a modern residential house facade, landscaped garden, blue sky, warm golden hour lighting, clean architecture, 4K quality",
   },
-  {
-    label: "Quarto de luxo",
-    prompt: "Ultra-realistic professional interior photography of a luxurious master bedroom, king bed, soft lighting, 4k",
-  }
 ];
 
 const AIPhotoGenerator = () => {
@@ -40,49 +36,29 @@ const AIPhotoGenerator = () => {
 
   const [probeResults, setProbeResults] = useState<{
     google: boolean | null;
-    unsplash: boolean | null;
     pollinations: boolean | null;
-  }>({ google: null, unsplash: null, pollinations: null });
+  }>({ google: null, pollinations: null });
   const [isProbing, setIsProbing] = useState(false);
 
   const loadingRef = useRef(false);
   const watchdogRef = useRef<NodeJS.Timeout | null>(null);
-  const fallbackRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     return () => {
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
-      if (fallbackRef.current) clearTimeout(fallbackRef.current);
     };
   }, []);
 
   const runDiagnostic = async () => {
     setIsProbing(true);
-    setProbeResults({ google: null, unsplash: null, pollinations: null });
-
     const google = await probeConnectivity("https://www.google.com/favicon.ico");
-    setProbeResults(prev => ({ ...prev, google }));
-
-    const unsplash = await probeConnectivity("https://loremflickr.com/favicon.ico");
-    setProbeResults(prev => ({ ...prev, unsplash }));
-
-    const pollinations = await probeConnectivity("https://image.pollinations.ai/prompt/test?width=32&height=32");
-    setProbeResults(prev => ({ ...prev, pollinations }));
-
+    const pollinations = await probeConnectivity("https://image.pollinations.ai/prompt/test?width=32");
+    setProbeResults({ google, pollinations });
     setIsProbing(false);
 
     if (google && !pollinations) {
-      toast({
-        title: "Bloqueio de IA Detectado",
-        description: "Sua rede permite sites normais mas bloqueia a IA. Use o 'Modo Banco de Imagem'.",
-        variant: "destructive"
-      });
-      setIsStockMode(true);
-    } else if (google && pollinations) {
-      toast({ title: "Tudo OK!", description: "Sua rede está livre para gerar fotos com IA." });
-    } else {
-      toast({ title: "Erro de Rede Geral", description: "Verifique sua conexão com a internet.", variant: "destructive" });
+      toast({ title: "Filtro Ativo", description: "Sua rede bloqueia a IA. O v4.0 Proxy vai tentar furar o bloqueio.", variant: "destructive" });
     }
   };
 
@@ -99,12 +75,11 @@ const AIPhotoGenerator = () => {
     loadingRef.current = false;
     setShowFallback(false);
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
-    if (fallbackRef.current) clearTimeout(fallbackRef.current);
   };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      toast({ title: "Descreva o imóvel ou ambiente", variant: "destructive" });
+      toast({ title: "Descreva o imóvel", variant: "destructive" });
       return;
     }
 
@@ -114,40 +89,30 @@ const AIPhotoGenerator = () => {
     setGeneratedImage(null);
 
     try {
-      // v2.8 uses provider flag
+      // v4.0 PROXY
       const imageUrl = await generateImage(prompt, isStockMode ? "stock" : "ai");
-
-      fallbackRef.current = setTimeout(() => {
-        if (loadingRef.current) setShowFallback(true);
-      }, 5000);
 
       watchdogRef.current = setTimeout(() => {
         if (loadingRef.current) {
           stopLoading();
-          toast({
-            title: "Timeout v2.8",
-            description: "Tentando abrir fallback ou link direto.",
-            variant: "destructive"
-          });
+          toast({ title: "Atraso no Servidor", description: "A imagem está sendo processada.", variant: "destructive" });
           setGeneratedImage(imageUrl);
         }
-      }, 45000);
+      }, 55000);
 
       setGeneratedImage(imageUrl);
-      toast({ title: isStockMode ? "Buscando foto real..." : "Iniciando IA v2.8..." });
     } catch (err: any) {
       stopLoading();
-      toast({
-        title: "Erro v2.8",
-        description: err.message || "Tente novamente.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro v4.0", description: err.message, variant: "destructive" });
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: "URL copiada!", description: "Teste colar em uma aba privada." });
+  const handleDownload = () => {
+    if (!generatedImage) return;
+    const link = document.createElement("a");
+    link.download = `foto-copylmob-${Date.now()}.png`;
+    link.href = generatedImage;
+    link.click();
   };
 
   return (
@@ -156,147 +121,100 @@ const AIPhotoGenerator = () => {
         <div className="flex justify-between items-start mb-4">
           <h2 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
             <Camera className="h-[18px] w-[18px] text-primary" />
-            Estúdio de Fotos Pro
+            Estúdio IA v4.0 (Proxy Mode)
           </h2>
           <div className="flex gap-2">
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-1 rounded font-mono">v3.0 stable</span>
+            <span className="text-[10px] bg-indigo-600 text-white px-1.5 py-1 rounded font-mono shadow-sm">v4.0 PROXY SERVER</span>
           </div>
         </div>
 
-        {/* Diagnostic Panel */}
-        <div className="bg-slate-900/5 border border-slate-200 rounded-lg p-4 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold">Diagnóstico de Saúde da Rede</span>
-            </div>
-            <Button variant="outline" size="sm" onClick={runDiagnostic} disabled={isProbing} className="h-7 text-[10px] gap-1">
-              {isProbing ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-              Rodar Teste
-            </Button>
+        <div className="bg-indigo-600/5 border border-indigo-600/20 rounded-lg p-3 mb-6 flex items-center gap-3">
+          <div className="bg-indigo-600/20 p-1.5 rounded-md">
+            <Send className="h-4 w-4 text-indigo-600" />
           </div>
-
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className={`p-2 rounded border transition-colors ${probeResults.google === true ? 'bg-green-50 border-green-200' : probeResults.google === false ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}>
-              <p className="text-[10px] font-bold text-slate-500 uppercase">Google</p>
-              <div className="flex justify-center mt-1">
-                {probeResults.google === true ? <Wifi className="h-4 w-4 text-green-500" /> : <WifiOff className="h-4 w-4 text-slate-300" />}
-              </div>
-            </div>
-            <div className={`p-2 rounded border transition-colors ${probeResults.unsplash === true ? 'bg-green-50 border-green-200' : probeResults.unsplash === false ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}>
-              <p className="text-[10px] font-bold text-slate-500 uppercase">Banco Imagem</p>
-              <div className="flex justify-center mt-1">
-                {probeResults.unsplash === true ? <Wifi className="h-4 w-4 text-green-500" /> : <WifiOff className="h-4 w-4 text-slate-300" />}
-              </div>
-            </div>
-            <div className={`p-2 rounded border transition-colors ${probeResults.pollinations === true ? 'bg-green-50 border-green-200' : probeResults.pollinations === false ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-100'}`}>
-              <p className="text-[10px] font-bold text-slate-500 uppercase">Servidor IA</p>
-              <div className="flex justify-center mt-1">
-                {probeResults.pollinations === true ? <Wifi className="h-4 w-4 text-green-500" /> : <WifiOff className="h-4 w-4 text-slate-300" />}
-              </div>
-            </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-indigo-700">Modo de Resgate Ativado</p>
+            <p className="text-xs text-indigo-600/80">Esta versão usa um túnel seguro para buscar a imagem e entregá-la direto no seu dashboard.</p>
           </div>
+          <Button variant="outline" size="sm" onClick={runDiagnostic} disabled={isProbing} className="h-8 text-xs gap-1.5 border-indigo-200 text-indigo-600">
+            {isProbing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wifi className="h-3 w-3" />}
+            Testar Rede v4
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between bg-muted/30 p-2 rounded-lg border border-border">
-              <span className="text-xs font-medium">Modo de Geração:</span>
+              <span className="text-xs font-medium">Método:</span>
               <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant={!isStockMode ? "default" : "outline"}
-                  onClick={() => setIsStockMode(false)}
-                  className="h-7 text-[10px] px-2 gap-1 rounded-md"
-                >
-                  <Sparkles className="h-3 w-3" /> IA Premium
+                <Button size="sm" variant={!isStockMode ? "default" : "outline"} onClick={() => setIsStockMode(false)} className="h-7 text-[10px] px-2 gap-1 rounded-md">
+                  <Sparkles className="h-3 w-3" /> IA Proxy (Fura Bloqueio)
                 </Button>
-                <Button
-                  size="sm"
-                  variant={isStockMode ? "default" : "outline"}
-                  onClick={() => setIsStockMode(true)}
-                  className="h-7 text-[10px] px-2 gap-1 rounded-md"
-                >
-                  <ImageIcon className="h-3 w-3" /> Banco de Imagens
+                <Button size="sm" variant={isStockMode ? "default" : "outline"} onClick={() => setIsStockMode(true)} className="h-7 text-[10px] px-2 gap-1 rounded-md">
+                  <ImageIcon className="h-3 w-3" /> Banco Imagem (Safe)
                 </Button>
               </div>
             </div>
 
             <div>
-              <Label className="text-sm text-foreground mb-1.5 block">Descrição</Label>
+              <Label className="text-sm text-foreground mb-1.5 block">Descrição do Imóvel</Label>
               <Textarea
-                placeholder={isStockMode ? "Descreva o que buscar... (Ex: Cozinha moderna)" : "Descreva detalhadamente para a IA..."}
+                placeholder="Ex: Cozinha moderna com ilha central e luz quente..."
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="bg-background min-h-[120px]"
+                className="bg-background min-h-[120px] border-indigo-100 focus:border-indigo-300"
               />
             </div>
 
             <Button
               onClick={handleGenerate}
               disabled={isLoading || !prompt.trim()}
-              className={`w-full font-semibold gap-2 rounded-xl transition-all ${isStockMode ? 'bg-slate-800 hover:bg-slate-900 border-none' : 'gradient-primary'}`}
+              className="w-full font-bold h-12 gap-2 rounded-xl transition-all gradient-primary shadow-lg shadow-indigo-200"
             >
-              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : isStockMode ? <ImageIcon className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
-              {isLoading ? "Processando..." : isStockMode ? "Buscar Foto Realista" : "Gerar com IA Pro"}
+              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+              {isLoading ? "FURANDO BLOQUEIO DE REDE..." : "GERAR FOTO COM IA"}
             </Button>
 
-            {showFallback && generatedImage && (
-              <div className="grid grid-cols-2 gap-2 mt-4 p-3 bg-blue-50/50 rounded-lg border border-blue-100">
-                <a
-                  href={generatedImage} target="_blank" rel="noreferrer"
-                  className="flex items-center justify-center gap-2 p-2 text-[10px] font-bold text-blue-700 bg-white rounded border border-blue-200 hover:bg-blue-50 transition-colors shadow-sm"
-                  onClick={() => stopLoading()}
-                >
-                  <ExternalLink className="h-3 w-3" /> Abrir direto
-                </a>
-                <button
-                  onClick={() => copyToClipboard(generatedImage)}
-                  className="flex items-center justify-center gap-2 p-2 text-[10px] font-bold text-slate-700 bg-white rounded border border-slate-200 hover:bg-slate-50 transition-colors shadow-sm"
-                >
-                  <Copy className="h-3 w-3" /> Copiar Link
-                </button>
-              </div>
+            {generatedImage && !isLoading && (
+              <Button onClick={handleDownload} variant="outline" className="w-full gap-2 border-indigo-200 text-indigo-700">
+                <Download className="h-4 w-4" /> Baixar Imagem Gerada
+              </Button>
             )}
           </div>
 
           <div className="flex flex-col items-center justify-center">
-            <div className="border border-border rounded-lg overflow-hidden shadow-xl bg-muted/30 flex items-center justify-center w-full min-h-[300px] max-h-[520px] relative">
+            <div className="border-2 border-dashed border-indigo-100 rounded-2xl overflow-hidden bg-indigo-50/30 flex items-center justify-center w-full min-h-[350px] relative">
               {isLoading && (
-                <div className="absolute inset-0 z-10 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3 p-8 text-slate-600">
+                <div className="absolute inset-0 z-10 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-8">
                   <div className="relative">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                    {isStockMode ? <ImageIcon className="h-6 w-6 absolute top-3 left-3 opacity-50" /> : <Sparkles className="h-6 w-6 absolute top-3 left-3 opacity-50" />}
+                    <Loader2 className="h-14 w-14 animate-spin text-indigo-600" />
+                    <ShieldCheck className="h-6 w-6 absolute top-4 left-4 text-indigo-400 opacity-50" />
                   </div>
-                  <p className="text-sm font-bold">{isStockMode ? "Buscando fotos reais..." : "Geração v2.8 em curso..."}</p>
-                  <p className="text-[10px] text-center opacity-70 max-w-[200px]">Aguardando resposta dos servidores globais.</p>
+                  <p className="text-sm font-bold text-indigo-900 uppercase tracking-wider">Processando via Túnel v4...</p>
+                  <p className="text-[10px] text-center text-indigo-600 opacity-70 max-w-[220px]">Estamos baixando a imagem no servidor para que sua rede não a bloqueie.</p>
                 </div>
               )}
 
               {generatedImage ? (
                 <img
                   src={generatedImage}
-                  alt="Resultado"
+                  alt="Resultado v4.0"
                   onLoad={() => stopLoading()}
                   onError={() => {
                     stopLoading();
-                    setIsStockMode(true);
-                    toast({
-                      title: "Rede Bloqueada Detectada",
-                      description: "Sua internet bloqueou a IA. Ativamos automaticamente o 'Modo Banco de Imagens' para você conseguir fotos reais.",
-                      variant: "destructive"
-                    });
+                    toast({ title: "Erro Crítico v4", description: "O servidor proxy falhou. Tente o modo Safe.", variant: "destructive" });
                   }}
-                  className={`block w-full h-auto max-h-[500px] object-contain transition-all duration-500 ${isLoading ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}`}
+                  className={`block w-full h-auto max-h-[500px] object-contain transition-all duration-700 ${isLoading ? 'opacity-0 scale-95 blur-xl' : 'opacity-100 scale-100 blur-0'}`}
                 />
               ) : !isLoading && (
-                <div className="flex flex-col items-center gap-2 p-8 text-muted-foreground text-center">
-                  <Camera className="h-10 w-10 opacity-20" />
-                  <p className="text-sm font-medium">Visualização</p>
-                  <p className="text-[10px] opacity-60">Escolha o modo {isStockMode ? 'Banco de Imagens' : 'IA'} para começar.</p>
+                <div className="flex flex-col items-center gap-3 p-8 text-indigo-300 text-center">
+                  <div className="bg-indigo-50 p-4 rounded-full">
+                    <Camera className="h-12 w-12" />
+                  </div>
+                  <p className="text-sm font-semibold text-indigo-400 uppercase tracking-tight">O resultado tunelado aparecerá aqui</p>
                 </div>
               )}
             </div>

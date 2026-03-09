@@ -100,44 +100,47 @@ const CreativeGenerator = () => {
 
     try {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
+
+      // v4.0 PROXY
       const imageUrl = await generateImage(prompt);
 
-      // Watchdog de 60 segundos (v2.5)
+      // Watchdog de 60 segundos (v4.0)
       watchdogRef.current = setTimeout(() => {
         if (generatingRef.current) {
           setIsGenerating(false);
           generatingRef.current = false;
           toast({
-            title: "O servidor demorou muito (v2.5)",
-            description: "A imagem pode não carregar automaticamente.",
+            title: "Timeout do Servidor (v4.0)",
+            description: "A geração via Proxy está demorando. Tente novamente.",
             variant: "destructive"
           });
         }
       }, 60000);
 
       const img = new Image();
+      // Em modo Proxy (base64) não precisamos de crossOrigin, mas mantemos por segurança se mudar o provider
       img.crossOrigin = "anonymous";
       img.onload = () => {
         setImage(img);
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Imagem gerada com IA! (v2.5)" });
+        toast({ title: "Imagem gerada via Proxy! (v4.0)" });
       };
       img.onerror = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Erro ao processar imagem da IA (v2.5)", variant: "destructive" });
+        toast({ title: "Erro ao processar imagem (v4.0)", variant: "destructive" });
       };
       img.src = imageUrl;
     } catch (err: any) {
-      console.error("🚨 Erro Criativo v2.5:", err);
+      console.error("🚨 Erro Criativo v4.0:", err);
       setIsGenerating(false);
       generatingRef.current = false;
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       toast({
-        title: "Erro na geração (v2.5)",
+        title: "Erro na geração (v4.0)",
         description: err.message || "Tente novamente.",
         variant: "destructive"
       });

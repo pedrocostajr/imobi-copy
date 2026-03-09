@@ -7,78 +7,59 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // CORS Pre-flight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { prompt } = await req.json();
+    if (!prompt) throw new Error("Prompt is required");
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY IS MISSING");
-      throw new Error("LOVABLE_API_KEY is not configured in Supabase secrets");
-    }
-    console.log("LOVABLE_API_KEY found, initiating photo fetch...");
+    console.log(`🎨 [v4.0] Gerando imagem para: ${prompt}`);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-1.5-flash",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        modalities: ["image", "text"],
-      }),
-    });
+    // v4.0: Usamos Pollinations mas o download ocorre no SERVIDOR
+    const cleanPrompt = prompt.trim().substring(0, 200).replace(/[?#&]/g, '');
+    const quality = "professional real estate photo, 4k, interior";
+    const seed = Math.floor(Math.random() * 1000000);
+    const encoded = encodeURIComponent(`${cleanPrompt}, ${quality}`);
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&model=turbo`;
 
+    console.log(`📡 Fetching from: ${pollinationsUrl}`);
+
+    // Download da imagem no servidor Supabase (baixa latência)
+    const response = await fetch(pollinationsUrl);
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns segundos." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      throw new Error(`Erro ao buscar imagem do Pollinations: ${response.status}`);
+    }
+
+    const imageBuffer = await response.arrayBuffer();
+    const base64Image = btoa(
+      new Uint8Array(imageBuffer).reduce(
+        (data, byte) => data + String.fromCharCode(byte),
+        ""
+      )
+    );
+
+    console.log("✅ Imagem processada com sucesso no servidor.");
+
+    return new Response(
+      JSON.stringify({
+        imageUrl: `data:image/png;base64,${base64Image}`,
+        version: "v4.0 PROXY"
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione créditos ao workspace." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "Erro ao gerar foto. Tente novamente." }), {
+    );
+  } catch (e) {
+    console.error("🚨 generate-photo v4.0 proxy error:", e);
+    return new Response(
+      JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido na geração" }),
+      {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url || null;
-    const text = data.choices?.[0]?.message?.content || "";
-
-    if (!imageUrl) {
-      return new Response(JSON.stringify({ error: "Não foi possível gerar a imagem. Tente reformular a descrição." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(JSON.stringify({ imageUrl, text }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (e) {
-    console.error("generate-photo error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      }
+    );
   }
 });

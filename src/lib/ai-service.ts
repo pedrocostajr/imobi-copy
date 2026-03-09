@@ -1,4 +1,5 @@
 import { CopyFormData, CopyResult, parseCopyResponse } from "./copy-types";
+import { supabase } from "@/integrations/supabase/client";
 
 async function deepDiscovery(apiKey: string): Promise<string[]> {
     const versions = ["v1beta", "v1"];
@@ -46,35 +47,39 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 }
 
 /**
- * v3.0 - Maximum Reliability Strategy
+ * v4.0 - Supabase Proxy Strategy
+ * Bypasses local network blocks by fetching image on the server.
  */
 export async function generateImage(prompt: string, provider: "ai" | "stock" = "ai"): Promise<string> {
-    const cleanPrompt = prompt.trim().substring(0, 150).replace(/[?#&]/g, '');
-    const seed = Math.floor(Math.random() * 1000000);
-
     if (provider === "stock") {
-        // v3.0: LoremFlickr is much more stable than Unsplash source in restricted networks
-        const searchTags = "realestate,interior,house";
-        return `https://loremflickr.com/1080/1080/${searchTags}?lock=${seed}`;
+        const seed = Math.floor(Math.random() * 1000000);
+        return `https://loremflickr.com/1080/1080/realestate,interior?lock=${seed}`;
     }
 
-    // Try high-stability AI path
-    const quality = "real estate photography, architectural, 4k";
-    const encoded = encodeURIComponent(`${cleanPrompt}, ${quality}`);
+    try {
+        console.log("📡 [v4.0] Chamando Proxy Supabase para evitar bloqueio de rede...");
 
-    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&model=turbo`;
+        const { data, error } = await supabase.functions.invoke("generate-photo", {
+            body: { prompt }
+        });
+
+        if (error) throw error;
+        if (!data || !data.imageUrl) throw new Error("Servidor não retornou dados da imagem.");
+
+        return data.imageUrl; // Retorna o base64 diretamente
+    } catch (err: any) {
+        console.error("🚨 Erro no Proxy v4.0:", err);
+        // Fallback para Unsplash se o proxy falhar
+        const seed = Math.floor(Math.random() * 1000000);
+        return `https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1024&q=80&sig=${seed}`;
+    }
 }
 
 export async function probeConnectivity(url: string): Promise<boolean> {
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 4000);
-        const response = await fetch(url, {
-            method: "GET",
-            mode: "no-cors",
-            signal: controller.signal,
-            cache: 'no-store'
-        });
+        await fetch(url, { method: "HEAD", mode: "no-cors", signal: controller.signal });
         clearTimeout(timeoutId);
         return true;
     } catch (e) {
