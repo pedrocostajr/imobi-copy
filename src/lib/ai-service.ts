@@ -45,17 +45,46 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
     throw new Error("Erro na geração da copy.");
 }
 
-export async function generateImage(prompt: string): Promise<string> {
-    // Pollinations.ai v2.6 - Simplified High Stability Strategy
-    // Using the image.pollinations.ai subdomain which is the most reliable.
+/**
+ * v2.8 - Multi-provider and Fallback Strategy
+ * If Pollinations is blocked, we can offer Unsplash fallback or proxy.
+ */
+export async function generateImage(prompt: string, provider: "ai" | "stock" = "ai"): Promise<string> {
     const cleanPrompt = prompt.trim().substring(0, 200).replace(/[?#&]/g, '');
+    const seed = Math.floor(Math.random() * 1000000);
+
+    if (provider === "stock") {
+        // Fallback Unsplash for real estate photos that usually pass office filters
+        const keywords = encodeURIComponent(`${cleanPrompt}, real estate, interior, luxury`);
+        return `https://source.unsplash.com/featured/1080x1080?${keywords}&sig=${seed}`;
+    }
+
+    // Try multiple subdomains/paths for Pollinations (v2.8 Resilience)
     const quality = "professional real estate photo, 4k, architectural";
     const encoded = encodeURIComponent(`${cleanPrompt}, ${quality}`);
 
-    // Seed and Cache Buster
-    const seed = Math.floor(Math.random() * 1000000);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&seed=${seed}&nologo=true&model=turbo`;
+    // We rotate between subdomains in the UI if one fails, but here we return a prioritized one
+    return `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&seed=${seed}&nologo=true&model=turbo`;
+}
 
-    console.log("🎨 URL v2.6:", imageUrl);
-    return imageUrl;
+/**
+ * Probes connectivity to various endpoints to diagnose network blocks.
+ */
+export async function probeConnectivity(url: string): Promise<boolean> {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        await fetch(url, {
+            method: "HEAD",
+            mode: "no-cors",
+            signal: controller.signal,
+            cache: 'no-store'
+        });
+
+        clearTimeout(timeoutId);
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
