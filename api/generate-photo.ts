@@ -75,7 +75,7 @@ export default async function handler(
 
         return response.status(200).json({
             imageUrl: `data:image/png;base64,${base64Image}`,
-            version: "v7.4 VERCEL-ELITE"
+            version: "v7.5 VERCEL-ELITE"
         });
 
     } catch (error: any) {

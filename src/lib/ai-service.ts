@@ -91,8 +91,8 @@ export async function generateImage(prompt: string): Promise<string> {
 
         return data.imageUrl; // Retorna o base64
     } catch (err: any) {
-        console.error("🚨 Erro Crítico v7.4:", err);
-        throw new Error(`Falha Vercel v7.4: ${err.message || 'Erro de conexão'}`);
+        console.error("🚨 Erro Crítico v7.5:", err);
+        throw new Error(`Falha Vercel v7.5: ${err.message || 'Erro de conexão'}`);
     }
 }
 
