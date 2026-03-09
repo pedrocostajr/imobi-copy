@@ -88,9 +88,7 @@ const AIPhotoGenerator = () => {
 
         <div className="mb-4 bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center gap-2 text-amber-800">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <p className="text-[11px] font-medium leading-tight">
-            <strong>ESTADO DE ATUALIZAÇÃO v7.6:</strong> Sistema em recalibração. Verifique a conectividade: <a href="/api/ping" target="_blank" className="underline font-bold">Teste de Túnel</a>.
-          </p>
+          <strong>OTIMIZAÇÃO v7.7:</strong> Bypass automático ativado. Se a Vercel demorar mais de 10s, a imagem será gerada via Túnel de Emergência.
         </div>
 
         <div className="bg-emerald-600/5 border border-emerald-600/20 rounded-lg p-3 mb-6 flex items-center gap-3">
@@ -99,11 +97,11 @@ const AIPhotoGenerator = () => {
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-emerald-800 uppercase tracking-tight">Motor OpenRouter Ativado</p>
-            <p className="text-xs text-emerald-600/80">Imagens de elite (DALL-E 3) com bypass total de restrições via Túnel Seguro.</p>
+            <p className="text-xs text-emerald-600/80">Imagens Ultra Speed (SDXL) com bypass automático de timeout via Túnel v7.7.</p>
           </div>
           <Button variant="outline" size="sm" onClick={runDiagnostic} disabled={isProbing} className="h-8 text-xs gap-1.5 border-emerald-200 text-emerald-600 hover:bg-emerald-50">
             {isProbing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wifi className="h-3 w-3" />}
-            Checar Elite v6
+            Checar Elite v7.7
           </Button>
         </div>
 
