@@ -76,13 +76,13 @@ const AIPhotoGenerator = () => {
         <div className="flex justify-between items-start mb-4">
           <h2 className="font-display text-lg font-semibold text-foreground mb-1 flex items-center gap-2">
             <Zap className="h-[18px] w-[18px] text-amber-500 fill-amber-500" />
-            Estúdio IA v7.6 (Vercel Bridge)
+            Estúdio IA v7.7 (Ultra Speed)
           </h2>
           <div className="flex gap-2">
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.6 VERCEL STABLE</span>
+            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.7 ULTRA SPEED</span>
           </div>
         </div>
 

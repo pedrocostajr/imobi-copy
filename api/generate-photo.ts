@@ -39,8 +39,8 @@ export default async function handler(
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "openai/dall-e-3",
-                prompt: `Professional high-end real estate photography of ${prompt}, architectural style, 8k, warm lighting, luxurious feel, clean wide angle shot`,
+                model: "stabilityai/sdxl",
+                prompt: `Professional real estate photography of ${prompt}, architectural style, 8k, clean wide angle, HD`,
                 n: 1,
                 size: "1024x1024",
                 response_format: "b64_json"

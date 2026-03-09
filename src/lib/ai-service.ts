@@ -89,10 +89,15 @@ export async function generateImage(prompt: string): Promise<string> {
         const data = await response.json();
         if (!data || !data.imageUrl) throw new Error("A Vercel não retornou os dados da imagem.");
 
-        return data.imageUrl; // Retorna o base64
     } catch (err: any) {
-        console.error("🚨 Erro Crítico v7.6:", err);
-        throw new Error(`Falha Vercel v7.6: ${err.message || 'Erro de conexão'}`);
+        console.warn("⚠️ Vercel Bridge lenta ou fora do ar. Usando Fallback de Emergência (v7.7)...");
+
+        // Fallback Direto (Pollinations.ai) - Ignora a Vercel se ela demorar mais de 10s
+        const seed = Math.floor(Math.random() * 1000000);
+        const encodedPrompt = encodeURIComponent(`high quality real estate photography, ${prompt}, 8k, architectural`);
+        const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?seed=${seed}&width=1024&height=1024&model=flux&nologo=true`;
+
+        return fallbackUrl;
     }
 }
 
