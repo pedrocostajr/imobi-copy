@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // CORS Pre-flight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -16,47 +15,66 @@ serve(async (req) => {
     const { prompt } = await req.json();
     if (!prompt) throw new Error("Prompt is required");
 
-    console.log(`🎨 [v5.0 PURE BRIDGE] Gerando imagem para: ${prompt}`);
-
-    // v5.0: Geração via Pollinations no servidor (Deno)
-    const cleanPrompt = prompt.trim().substring(0, 300).replace(/[?#&]/g, '');
-    const quality = "ultra-realistic real estate photography, professional interior design, 8k, highly detailed";
-    const seed = Math.floor(Math.random() * 1000000);
-    const encoded = encodeURIComponent(`${cleanPrompt}, ${quality}`);
-
-    // Tentamos o modelo premium 'flux' via Pollinations no servidor
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true`;
-
-    console.log(`📡 Server-to-Server request: ${pollinationsUrl}`);
-
-    const response = await fetch(pollinationsUrl);
-    if (!response.ok) {
-      throw new Error(`Erro API IA: ${response.status}`);
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    if (!OPENROUTER_API_KEY) {
+      console.error("🚨 OPENROUTER_API_KEY não configurada no Supabase.");
+      // Fallback para Pollinations no servidor se a chave falhar (v5.1 logic)
+      return await handlePollinationsFallback(prompt);
     }
 
-    const imageBuffer = await response.arrayBuffer();
-    const base64Image = btoa(
-      new Uint8Array(imageBuffer).reduce(
-        (data, byte) => data + String.fromCharCode(byte),
-        ""
-      )
-    );
+    console.log(`🎨 [v6.0 OPENROUTER] Gerando imagem: ${prompt}`);
 
-    console.log("✅ Imagem convertida em BINÁRIO com sucesso.");
+    // Tentamos usar o modelo Flux via OpenRouter (Alta qualidade e rápido)
+    const orResponse = await fetch("https://openrouter.ai/api/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "X-Title": "Copylmob Real Estate",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "openai/dall-e-3", // DALL-E 3 é o mais estável para essa chamada
+        prompt: `Professional high-end real estate photography of ${prompt}, architectural style, 8k, warm lighting, luxurious feel, clean wide angle shot`,
+        n: 1,
+        size: "1024x1024",
+        response_format: "b64_json" // Vantagem total: OpenRouter já devolve os pixels!
+      })
+    });
+
+    if (!orResponse.ok) {
+      const errorDetail = await orResponse.text();
+      console.warn(`⚠️ OpenRouter Error: ${orResponse.status}. Detalhe: ${errorDetail}`);
+      // Se OpenRouter falhar/estiver sem saldo, caímos para o Pollinations Server-Side (v5.1)
+      return await handlePollinationsFallback(prompt);
+    }
+
+    const orData = await orResponse.json();
+    const base64Image = orData.data?.[0]?.b64_json;
+
+    if (!base64Image) {
+      // Se não veio base64 mas veio URL, baixamos no servidor
+      const imageUrl = orData.data?.[0]?.url;
+      if (imageUrl) {
+        return await fetchAndReturnBase64(imageUrl, "v6.0 URL-BRIDGE");
+      }
+      throw new Error("OpenRouter não retornou dados de imagem.");
+    }
+
+    console.log("✅ Imagem OpenRouter (DALL-E 3) recebida com sucesso.");
 
     return new Response(
       JSON.stringify({
         imageUrl: `data:image/png;base64,${base64Image}`,
-        version: "v5.0 PURE BRIDGE"
+        version: "v6.0 OPENROUTER"
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   } catch (e) {
-    console.error("🚨 generate-photo v5.0 error:", e);
+    console.error("🚨 generate-photo v6.0 error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Erro crítico na ponte v5.0" }),
+      JSON.stringify({ error: e instanceof Error ? e.message : "Erro crítico na v6.0" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -64,3 +82,27 @@ serve(async (req) => {
     );
   }
 });
+
+async function handlePollinationsFallback(prompt: string) {
+  console.log("🔄 Usando Fallback Pollinations Server-Side...");
+  const seed = Math.floor(Math.random() * 1000000);
+  const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt + ", real estate professional photo, 4k")}?width=1024&height=1024&seed=${seed}&nologo=true`;
+  return await fetchAndReturnBase64(pollinationsUrl, "v6.0 FALLBACK-BRIDGE");
+}
+
+async function fetchAndReturnBase64(url: string, versionPrefix: string) {
+  const response = await fetch(url);
+  const imageBuffer = await response.arrayBuffer();
+  const base64Image = btoa(
+    new Uint8Array(imageBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+  );
+  return new Response(
+    JSON.stringify({
+      imageUrl: `data:image/png;base64,${base64Image}`,
+      version: versionPrefix
+    }),
+    {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    }
+  );
+}

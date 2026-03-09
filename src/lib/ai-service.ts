@@ -52,7 +52,7 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
  */
 export async function generateImage(prompt: string): Promise<string> {
     try {
-        console.log("🚀 [v5.1] Iniciando Geração via DIRECT FETCH BRIDGE...");
+        console.log("🚀 [v6.0] Iniciando Geração via OPENROUTER BRIDGE...");
 
         const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
         const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -82,8 +82,8 @@ export async function generateImage(prompt: string): Promise<string> {
 
         return data.imageUrl;
     } catch (err: any) {
-        console.error("🚨 Erro Crítico v5.1:", err);
-        throw new Error(`Falha de Conexão v5.1: ${err.message || 'Erro desconhecido'}`);
+        console.error("🚨 Erro Crítico v6.0:", err);
+        throw new Error(`Falha OpenRouter v6.0: ${err.message || 'Erro desconhecido'}`);
     }
 }
 

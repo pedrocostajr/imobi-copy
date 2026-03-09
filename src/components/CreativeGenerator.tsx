@@ -101,18 +101,18 @@ const CreativeGenerator = () => {
     try {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
 
-      // v5.1 DIRECT FETCH BRIDGE
+      // v6.0 OPENROUTER ENGINE
       const imageUrl = await generateImage(prompt);
 
-      // Watchdog de 60 segundos (v5.1)
+      // Watchdog de 60 segundos (v6.0)
       watchdogRef.current = setTimeout(() => {
         if (generatingRef.current) {
           setIsGenerating(false);
           generatingRef.current = false;
           toast({
-            title: "Timeout v5.1",
-            description: "A conexão direta está demorando. Tente novamente.",
-            variant: "destructive"
+            title: "Processamento v6.0",
+            description: "A IA está finalizando sua imagem via OpenRouter.",
+            variant: "default"
           });
         }
       }, 60000);
@@ -123,27 +123,27 @@ const CreativeGenerator = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Imagem Gerada (v5.1 Direct)!" });
+        toast({ title: "Imagem Gerada via OpenRouter! (v6.0)" });
       };
       img.onerror = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Erro de Renderização (v5.1)", variant: "destructive" });
+        toast({ title: "Erro de Renderização (v6.0)", variant: "destructive" });
       };
       img.src = imageUrl;
     } catch (err: any) {
-      console.error("🚨 Erro Criativo v5.1:", err);
+      console.error("🚨 Erro Criativo v6.0:", err);
       setIsGenerating(false);
       generatingRef.current = false;
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       toast({
-        title: "Falha de Conexão v5.1",
+        title: "Falha OpenRouter v6.0",
         description: err.message || "Sua rede bloqueou o acesso.",
         variant: "destructive"
       });
     }
-  };
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
