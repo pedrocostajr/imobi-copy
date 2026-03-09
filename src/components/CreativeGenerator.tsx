@@ -101,46 +101,44 @@ const CreativeGenerator = () => {
     try {
       const prompt = `${data.headline} ${data.subtext}`.trim() || "modern luxury real estate interior";
 
-      // v4.0 PROXY
+      // v5.0 PURE BRIDGE (Binary data via Supabase)
       const imageUrl = await generateImage(prompt);
 
-      // Watchdog de 60 segundos (v4.0)
+      // Watchdog de 60 segundos (v5.0)
       watchdogRef.current = setTimeout(() => {
         if (generatingRef.current) {
           setIsGenerating(false);
           generatingRef.current = false;
           toast({
-            title: "Timeout do Servidor (v4.0)",
-            description: "A geração via Proxy está demorando. Tente novamente.",
+            title: "Ufa! Servidor Ocupado (v5.0)",
+            description: "A IA está processando sua imagem. Verifique em instantes.",
             variant: "destructive"
           });
         }
       }, 60000);
 
       const img = new Image();
-      // Em modo Proxy (base64) não precisamos de crossOrigin, mas mantemos por segurança se mudar o provider
-      img.crossOrigin = "anonymous";
       img.onload = () => {
         setImage(img);
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Imagem gerada via Proxy! (v4.0)" });
+        toast({ title: "Imagem Gerada via Pure Bridge! (v5.0)" });
       };
       img.onerror = () => {
         setIsGenerating(false);
         generatingRef.current = false;
         if (watchdogRef.current) clearTimeout(watchdogRef.current);
-        toast({ title: "Erro ao processar imagem (v4.0)", variant: "destructive" });
+        toast({ title: "Erro de Processamento Bridge (v5.0)", variant: "destructive" });
       };
       img.src = imageUrl;
     } catch (err: any) {
-      console.error("🚨 Erro Criativo v4.0:", err);
+      console.error("🚨 Erro Criativo v5.0:", err);
       setIsGenerating(false);
       generatingRef.current = false;
       if (watchdogRef.current) clearTimeout(watchdogRef.current);
       toast({
-        title: "Erro na geração (v4.0)",
+        title: "Falha na Geração (v5.0)",
         description: err.message || "Tente novamente.",
         variant: "destructive"
       });

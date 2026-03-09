@@ -16,21 +16,22 @@ serve(async (req) => {
     const { prompt } = await req.json();
     if (!prompt) throw new Error("Prompt is required");
 
-    console.log(`🎨 [v4.0] Gerando imagem para: ${prompt}`);
+    console.log(`🎨 [v5.0 PURE BRIDGE] Gerando imagem para: ${prompt}`);
 
-    // v4.0: Usamos Pollinations mas o download ocorre no SERVIDOR
-    const cleanPrompt = prompt.trim().substring(0, 200).replace(/[?#&]/g, '');
-    const quality = "professional real estate photo, 4k, interior";
+    // v5.0: Geração via Pollinations no servidor (Deno)
+    const cleanPrompt = prompt.trim().substring(0, 300).replace(/[?#&]/g, '');
+    const quality = "ultra-realistic real estate photography, professional interior design, 8k, highly detailed";
     const seed = Math.floor(Math.random() * 1000000);
     const encoded = encodeURIComponent(`${cleanPrompt}, ${quality}`);
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true&model=turbo`;
 
-    console.log(`📡 Fetching from: ${pollinationsUrl}`);
+    // Tentamos o modelo premium 'flux' via Pollinations no servidor
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&seed=${seed}&nologo=true`;
 
-    // Download da imagem no servidor Supabase (baixa latência)
+    console.log(`📡 Server-to-Server request: ${pollinationsUrl}`);
+
     const response = await fetch(pollinationsUrl);
     if (!response.ok) {
-      throw new Error(`Erro ao buscar imagem do Pollinations: ${response.status}`);
+      throw new Error(`Erro API IA: ${response.status}`);
     }
 
     const imageBuffer = await response.arrayBuffer();
@@ -41,21 +42,21 @@ serve(async (req) => {
       )
     );
 
-    console.log("✅ Imagem processada com sucesso no servidor.");
+    console.log("✅ Imagem convertida em BINÁRIO com sucesso.");
 
     return new Response(
       JSON.stringify({
         imageUrl: `data:image/png;base64,${base64Image}`,
-        version: "v4.0 PROXY"
+        version: "v5.0 PURE BRIDGE"
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   } catch (e) {
-    console.error("🚨 generate-photo v4.0 proxy error:", e);
+    console.error("🚨 generate-photo v5.0 error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido na geração" }),
+      JSON.stringify({ error: e instanceof Error ? e.message : "Erro crítico na ponte v5.0" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

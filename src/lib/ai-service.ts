@@ -47,31 +47,24 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 }
 
 /**
- * v4.0 - Supabase Proxy Strategy
- * Bypasses local network blocks by fetching image on the server.
+ * v5.0 - Pure Server Bridge Strategy
+ * Absolute bypass of local network blocks by fetching image bits on the server.
  */
-export async function generateImage(prompt: string, provider: "ai" | "stock" = "ai"): Promise<string> {
-    if (provider === "stock") {
-        const seed = Math.floor(Math.random() * 1000000);
-        return `https://loremflickr.com/1080/1080/realestate,interior?lock=${seed}`;
-    }
-
+export async function generateImage(prompt: string): Promise<string> {
     try {
-        console.log("📡 [v4.0] Chamando Proxy Supabase para evitar bloqueio de rede...");
+        console.log("🚀 [v5.0] Iniciando Geração via PURE BRIDGE (Server-Side)...");
 
         const { data, error } = await supabase.functions.invoke("generate-photo", {
             body: { prompt }
         });
 
         if (error) throw error;
-        if (!data || !data.imageUrl) throw new Error("Servidor não retornou dados da imagem.");
+        if (!data || !data.imageUrl) throw new Error("O servidor de IA falhou ao processar os dados.");
 
-        return data.imageUrl; // Retorna o base64 diretamente
+        return data.imageUrl; // Retorna o base64 (data:image/png;base64,...)
     } catch (err: any) {
-        console.error("🚨 Erro no Proxy v4.0:", err);
-        // Fallback para Unsplash se o proxy falhar
-        const seed = Math.floor(Math.random() * 1000000);
-        return `https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1024&q=80&sig=${seed}`;
+        console.error("🚨 Erro Crítico na Ponte v5.0:", err);
+        throw new Error("Não foi possível gerar a foto devido a restrições de rede. Tente novamente ou use outra conexão.");
     }
 }
 
