@@ -47,7 +47,7 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
 }
 
 /**
- * v7.8 - Smart Failover Watchdog Strategy
+ * v7.9 - Smart Failover Watchdog Strategy
  * Antecipates Vercel 10s timeout by bailing at 8s and uses TURBO fallback.
  */
 export async function generateImage(prompt: string): Promise<string> {
@@ -55,7 +55,7 @@ export async function generateImage(prompt: string): Promise<string> {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // Watchdog 8s
 
     try {
-        console.log("🚀 [v7.8] Iniciando Geração (Tunnel + Smart Watchdog)...");
+        console.log("🚀 [v7.9] Iniciando Geração (Tunnel + Smart Watchdog)...");
 
         const response = await fetch("/api/generate-photo", {
             method: 'POST',
@@ -74,7 +74,7 @@ export async function generateImage(prompt: string): Promise<string> {
         return data.imageUrl; // Retorna o base64 se o servidor responder rápido
     } catch (err: any) {
         clearTimeout(timeoutId);
-        console.warn("⚠️ Failover v7.8 Ativado: Usando Túnel Ultra-Resiliente (Turbo).");
+        console.warn("⚠️ Failover v7.9 Ativado: Usando Túnel Ultra-Resiliente (Turbo).");
 
         // Fallback Pollinations TURBO (Mais livre de filas e rápido)
         const seed = Math.floor(Math.random() * 1000000);
