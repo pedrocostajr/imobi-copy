@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Building2, Sparkles } from "lucide-react";
+import { Building2, Sparkles, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CopyForm from "@/components/CopyForm";
 import CopyResults from "@/components/CopyResults";
