@@ -82,13 +82,8 @@ const AIPhotoGenerator = () => {
             <button onClick={forceReload} className="text-[10px] bg-muted hover:bg-muted/80 text-muted-foreground px-2 py-1 rounded flex items-center gap-1 transition-colors">
               <RefreshCw className="h-3 w-3" /> Reiniciar
             </button>
-            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v7.9 FINAL STABLE</span>
+            <span className="text-[10px] bg-black text-white px-2 py-1 rounded-full font-bold shadow-md animate-pulse">v8.0 FINAL STABLE</span>
           </div>
-        </div>
-
-        <div className="mb-4 bg-indigo-50 border border-indigo-200 p-3 rounded-xl flex items-center gap-2 text-indigo-800">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <strong>ESTABILIDADE v7.9:</strong> Watchdog de 8s ativo. Se a Vercel falhar, o motor reserva Assume em milissegundos.
         </div>
 
         <div className="bg-emerald-600/5 border border-emerald-600/20 rounded-lg p-3 mb-6 flex items-center gap-3">
@@ -97,12 +92,12 @@ const AIPhotoGenerator = () => {
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-emerald-800 uppercase tracking-tight">Motor OpenRouter Ativado</p>
-            <p className="text-xs text-emerald-600/80">Imagens Ultra Speed (SDXL) com bypass automático de timeout via Túnel v7.9
+            <p className="text-xs text-emerald-600/80">Imagens Ultra Speed (SDXL) com bypass automático de timeout via Túnel v8.0
               .</p>
           </div>
           <Button variant="outline" size="sm" onClick={runDiagnostic} disabled={isProbing} className="h-8 text-xs gap-1.5 border-emerald-200 text-emerald-600 hover:bg-emerald-50">
             {isProbing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wifi className="h-3 w-3" />}
-            Checar Elite v7.9
+            Checar Elite v8.0
           </Button>
         </div>
 
