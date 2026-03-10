@@ -92,12 +92,12 @@ const AIPhotoGenerator = () => {
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-emerald-800 uppercase tracking-tight">Motor OpenRouter Ativado</p>
-            <p className="text-xs text-emerald-600/80">Imagens Ultra Speed (SDXL) com bypass automático de timeout via Túnel v8.0
+            <p className="text-xs text-emerald-600/80">Imagens Ultra Speed (SDXL) com bypass automático de timeout via Túnel v8.1
               .</p>
           </div>
           <Button variant="outline" size="sm" onClick={runDiagnostic} disabled={isProbing} className="h-8 text-xs gap-1.5 border-emerald-200 text-emerald-600 hover:bg-emerald-50">
             {isProbing ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wifi className="h-3 w-3" />}
-            Checar Elite v8.0
+            Checar Elite v8.1
           </Button>
         </div>
 

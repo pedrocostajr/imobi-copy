@@ -28,7 +28,7 @@ export default async function handler(
             return response.status(500).json({ error: 'OPENROUTER_API_KEY not configured on Vercel' });
         }
 
-        console.log(`🎨 [v7.9 VERCEL BRIDGE] Gerando imagem: ${prompt}`);
+        console.log(`🎨 [v8.1 VERCEL BRIDGE] Gerando imagem: ${prompt}`);
 
         // Chamada para OpenRouter (SDXL for speed)
         const orResponse = await fetch("https://openrouter.ai/api/v1/images/generations", {
@@ -65,7 +65,7 @@ export default async function handler(
                 const b64 = buffer.toString('base64');
                 return response.status(200).json({
                     imageUrl: `data:image/png;base64,${b64}`,
-                    version: "v7.9 VERCEL-PROXY"
+                    version: "v8.1 VERCEL-PROXY"
                 });
             }
             return response.status(500).json({ error: 'No image data returned from OpenRouter' });
@@ -75,7 +75,7 @@ export default async function handler(
 
         return response.status(200).json({
             imageUrl: `data:image/png;base64,${base64Image}`,
-            version: "v7.9 VERCEL-ELITE"
+            version: "v8.1 VERCEL-ELITE"
         });
 
     } catch (error: any) {

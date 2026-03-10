@@ -27,6 +27,7 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
     const valorFinal = data.valor === "Personalizado" ? data.valorPersonalizado : data.valor;
     const systemPrompt = `Você é um Copywriter Imobiliário. Tom: ${data.tom}. Objetivo: ${data.objetivo}. DADOS: ${data.tipo} em ${data.cidade}/${data.bairro}. Público: ${data.publico}. Valor: ${valorFinal}. INSTRUÇÃO: Gere 5 blocos numerados: 1. COPY PRINCIPAL, 2. HEADLINE PARA IMAGEM, 3. VERSÃO RESUMIDA, 4. MENSAGEM WHATSAPP, 5. CTA RECOMENDADO.`;
 
+    let lastError = "Erro na conexão com Gemini.";
     for (const modelId of modelsToTry) {
         try {
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${GEMINI_API_KEY}`, {
@@ -37,17 +38,23 @@ export async function generateCopy(data: CopyFormData): Promise<CopyResult> {
                     generationConfig: { temperature: 0.7 }
                 }),
             });
+
             if (response.ok) {
                 const resData = await response.json();
                 return parseCopyResponse(resData.candidates?.[0]?.content?.parts?.[0]?.text || "");
+            } else {
+                const errText = await response.text();
+                lastError = `Gemini ${response.status}: ${errText.substring(0, 100)}`;
             }
-        } catch (e) { }
+        } catch (e: any) {
+            lastError = e.message;
+        }
     }
-    throw new Error("Erro na geração da copy.");
+    throw new Error(`Falha na Geração Copy v8.1: ${lastError}`);
 }
 
 /**
- * v8.0 - Smart Failover Watchdog Strategy
+ * v8.1 - Smart Failover Watchdog Strategy
  * Antecipates Vercel 10s timeout by bailing at 8s and uses TURBO fallback.
  */
 export async function generateImage(prompt: string): Promise<string> {
@@ -55,7 +62,7 @@ export async function generateImage(prompt: string): Promise<string> {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // Watchdog 8s
 
     try {
-        console.log("🚀 [v8.0] Iniciando Geração (Tunnel + Smart Watchdog)...");
+        console.log("🚀 [v8.1] Iniciando Geração (Tunnel + Smart Watchdog)...");
 
         const response = await fetch("/api/generate-photo", {
             method: 'POST',
@@ -74,7 +81,7 @@ export async function generateImage(prompt: string): Promise<string> {
         return data.imageUrl; // Retorna o base64 se o servidor responder rápido
     } catch (err: any) {
         clearTimeout(timeoutId);
-        console.warn("⚠️ Failover v8.0 Ativado: Usando Túnel Ultra-Resiliente (Turbo).");
+        console.warn("⚠️ Failover v8.1 Ativado: Usando Túnel Ultra-Resiliente (Turbo).");
 
         // Fallback Pollinations TURBO (Mais livre de filas e rápido)
         const seed = Math.floor(Math.random() * 1000000);

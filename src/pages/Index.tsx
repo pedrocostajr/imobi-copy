@@ -51,7 +51,7 @@ const Index = () => {
       {/* Global System Alert */}
       <div className="bg-amber-500 text-white text-[11px] font-bold py-2 px-4 text-center sticky top-0 z-[60] shadow-sm flex items-center justify-center gap-2">
         <AlertCircle className="h-3 w-3" />
-        SISTEMA EM ATUALIZAÇÃO: Instabilidade momentânea na geração de imagens. Recalibração em curso para v8.0.
+        SISTEMA EM ATUALIZAÇÃO: Instabilidade momentânea na geração de imagens e copy. Recalibração em curso para v8.1.
       </div>
 
       {/* Header */}
